@@ -1,6 +1,6 @@
+#!/usr/bin/env python
+import os
 from distutils.core import setup
-
-require = []
 
 with open('requirements.txt') as fp:
     requires = fp.read().split('\n')
@@ -8,13 +8,16 @@ with open('requirements.txt') as fp:
 with open('LICENSE') as fp:
     license = fp.read()
 
+with open('README.md') as fp:
+    readme = fp.read()
+
 setup(
     name='PysparkProxy',
-    version='0.0.1',
+    version='0.0.2',
     packages=['pyspark_proxy',],
-    license=license,
+    license='Apache 2.0',
     description='Seamlessly execute pyspark code on remote clusters',
-    long_description=open('README.md').read(),
+    long_description=readme,
     install_requires=requires,
     python_requires='>=2.7',
     url='https://github.com/abronte/PysparkProxy',
