@@ -43,7 +43,6 @@ def create():
 
                 args.append(objects[id])
 
-
         objects[req['id']] = callable(*tuple(args), **req['kwargs'])
     else:
         objects[req['id']] = callable(**req['kwargs'])
@@ -93,8 +92,23 @@ def call():
 
     return jsonify(result)
 
+@app.route('/clear', methods=['POST', 'GET'])
+def clear():
+    global objects
+
+    for o in objects:
+        obj = objects[o]
+
+        if type(obj) == pyspark.SparkContext:
+            obj.stop()
+
+    objects = {}
+
+    return 'ok'
+
 def run(*args, **kwargs):
     app.run(*args, **kwargs)
+
 
 if __name__ == '__main__':
     app.run(debug=True, use_reloader=False)
