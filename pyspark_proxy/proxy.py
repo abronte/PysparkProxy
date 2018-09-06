@@ -38,14 +38,14 @@ class Proxy(object):
                 'id': self._id
                 }
 
-        print('\ncreate object:')
-        print(body)
+        # print('\ncreate object:')
+        # print(body)
 
         r = requests.post('http://localhost:5000/create', json=body)
-        print(r.status_code)
+        # print(r.status_code)
 
     def _call(self, base_obj, path, function_args):
-        print('\n_call %s on %s' % (path, base_obj))
+        # print('\n_call %s on %s' % (path, base_obj))
 
         body = {
                 'id': base_obj,
@@ -54,13 +54,13 @@ class Proxy(object):
                 'kwargs': function_args[1]
                 }
 
-        print(body)
+        # print(body)
 
         r = requests.post('http://localhost:5000/call', json=body)
-        print(r.status_code)
-
+        # print(r.status_code)
+        #
         res_json = r.json()
-        print(res_json)
+        # print(res_json)
         
         if res_json['stdout'] != []:
             print('\n'.join(res_json['stdout']))
@@ -82,6 +82,6 @@ class Proxy(object):
         def method(*args, **kwargs):
             return self._call(self._id, name, (args, kwargs))
 
-        print('%s.%s' % (self._class, name))
+        # print('%s.%s' % (self._class, name))
 
         return method
