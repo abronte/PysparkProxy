@@ -1,6 +1,7 @@
 import os
 import shutil
 import unittest
+import pandas
 
 from base_test_case import BaseTestCase
 
@@ -76,6 +77,11 @@ class DataFrameTestCase(BaseTestCase):
         self.assertTrue(os.path.exists(path2))
         self.assertTrue(os.path.exists(path3))
         self.assertTrue(os.path.exists(path4))
+
+    def test_to_pandas(self):
+        pdf = self.df.toPandas()
+
+        self.assertEqual(type(pdf), pandas.core.frame.DataFrame)
 
 if __name__ == '__main__':
     unittest.main()

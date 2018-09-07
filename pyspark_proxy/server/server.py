@@ -1,5 +1,7 @@
 import uuid
 import os
+import pickle
+import base64
 
 import pyspark
 from flask import Flask, request, jsonify
@@ -76,7 +78,7 @@ def call():
             'stdout': stdout
             }
 
-    if res_obj != None:
+    if res_obj is not None:
         result['object'] = True
         result['class'] = res_obj.__class__.__name__
 
@@ -87,6 +89,9 @@ def call():
 
             print('Adding object id %s to the stack' % id)
             objects[id] = res_obj
+        elif 'pandas' in str(res_obj.__class__):
+            result['class'] = str(res_obj.__class__)
+            result['value'] = base64.b64encode(pickle.dumps(res_obj, 2))
         else:
             result['value'] = res_obj
 

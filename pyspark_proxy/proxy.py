@@ -1,6 +1,8 @@
 import sys
 import uuid
 import json
+import pickle
+import base64
 
 import requests
 
@@ -76,6 +78,8 @@ class Proxy(object):
                     from pyspark_proxy.sql.dataframe import DataFrame
 
                     return DataFrame(res_json['id'])
+            elif 'pandas' in res_json['class']:
+                return pickle.loads(base64.b64decode(res_json['value']))
             else:
                 return res_json['value']
         else:
