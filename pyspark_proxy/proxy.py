@@ -11,6 +11,7 @@ class Proxy(object):
     _kwargs = None
     _module = None
     _class = None
+    _func_chain = []
 
     def __init__(self, *args, **kwargs):
         self._id = str(uuid.uuid4())
@@ -44,6 +45,9 @@ class Proxy(object):
         r = requests.post('http://localhost:5000/create', json=body)
         # print(r.status_code)
 
+    # for a single function call
+    # ex: df.write.csv('foo.csv')
+    # ex: df.count()
     def _call(self, base_obj, path, function_args):
         # print('\n_call %s on %s' % (path, base_obj))
 
@@ -69,7 +73,6 @@ class Proxy(object):
             if 'id' in res_json:
 
                 if res_json['class'] == 'DataFrame':
-                    print('created dataframe object')
                     from pyspark_proxy.sql.dataframe import DataFrame
 
                     return DataFrame(res_json['id'])
@@ -78,10 +81,28 @@ class Proxy(object):
         else:
             return None
 
+    # for chained function calls
+    # ex: df.format('json').save('bar.json')
+    # 
+    # currently any implemented function doesn't return an object
+    # if in a later time _call_chain needs to return an object, might
+    # merge this with the regular _call function
+    def _call_chain(self, base_obj):
+        body = {
+            'id': base_obj,
+            'stack': self._func_chain
+            }
+
+        r = requests.post('http://localhost:5000/call_chain', json=body)
+        res_json = r.json()
+
+        self._func_chain = []
+
+        if res_json['stdout'] != []:
+            print('\n'.join(res_json['stdout']))
+
     def __getattr__(self, name):
         def method(*args, **kwargs):
             return self._call(self._id, name, (args, kwargs))
-
-        # print('%s.%s' % (self._class, name))
 
         return method

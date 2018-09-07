@@ -92,6 +92,33 @@ def call():
 
     return jsonify(result)
 
+@app.route('/call_chain', methods=['POST'])
+def call_chain():
+    global object
+
+    req = request.json
+
+    print('\nSERVER: CALL CHAIN')
+    print(req)
+
+    base_obj = objects[req['id']]
+
+    obj = base_obj
+
+    with Capture() as stdout:
+        for s in req['stack']:
+            obj = getattr(obj, s['func'])
+
+            if callable(obj):
+                obj = obj(*s['args'], **s['kwargs'])
+
+    result = {
+            'object': False,
+            'stdout': stdout
+            }
+
+    return jsonify(result)
+
 @app.route('/clear', methods=['POST', 'GET'])
 def clear():
     global objects

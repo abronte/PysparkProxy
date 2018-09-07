@@ -1,4 +1,5 @@
 import os
+import shutil
 import unittest
 
 from base_test_case import BaseTestCase
@@ -7,8 +8,14 @@ from pyspark_proxy.server.capture import Capture
 
 class DataFrameTestCase(BaseTestCase):
     def setUp(self):
-        path = os.path.abspath(os.path.dirname(__file__)) + '/data/data.json'
-        self.df = self.sqlContext.read.json(path)
+        self.current_path = os.path.abspath(os.path.dirname(__file__))
+        self.output_path = os.path.join(self.current_path, 'test_output')
+
+        self.df = self.sqlContext.read.json(os.path.join(self.current_path, 'data', 'data.json'))
+
+    def tearDown(self):
+        if os.path.exists(self.output_path):
+            shutil.rmtree(self.output_path)
 
     def test_count(self):
         self.assertEqual(self.df.count(), 3)
@@ -49,6 +56,26 @@ class DataFrameTestCase(BaseTestCase):
             u'']
 
         self.assertEqual(expected_output, output)
+
+    def test_write(self):
+        path = os.path.join(self.output_path, 'my_json.json')
+        path2 = os.path.join(self.output_path, 'my_json2.json')
+        path3 = os.path.join(self.output_path, 'foo.csv')
+        path4 = os.path.join(self.output_path, 'foo.parquet')
+
+        self.df.write.format('json').save(path)
+        self.df.write.mode('overwrite').json(path2)
+
+        #weirdness happens when this is moved to its own test case
+        #pretty sure its some odd thing with python unittest
+        self.df.write.option('header', True).csv(path3)
+
+        self.df.write.parquet(path4)
+
+        self.assertTrue(os.path.exists(path))
+        self.assertTrue(os.path.exists(path2))
+        self.assertTrue(os.path.exists(path3))
+        self.assertTrue(os.path.exists(path4))
 
 if __name__ == '__main__':
     unittest.main()
