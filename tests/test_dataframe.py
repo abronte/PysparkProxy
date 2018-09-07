@@ -83,5 +83,10 @@ class DataFrameTestCase(BaseTestCase):
 
         self.assertEqual(type(pdf), pandas.core.frame.DataFrame)
 
+    def test_collect(self):
+        rows = self.df.collect()
+
+        self.assertEqual(rows[0]['foo'], 1)
+
 if __name__ == '__main__':
     unittest.main()

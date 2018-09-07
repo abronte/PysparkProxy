@@ -63,7 +63,7 @@ def call():
     print(req)
 
     base_obj = objects[req['id']]
-    paths = req['path'].split('.') 
+    paths = req['path'].split('.')
 
     func = base_obj
     
@@ -89,8 +89,9 @@ def call():
 
             print('Adding object id %s to the stack' % id)
             objects[id] = res_obj
-        elif 'pandas' in str(res_obj.__class__):
-            result['class'] = str(res_obj.__class__)
+        # the last string in paths is the function that gets called
+        elif paths[-1] == 'toPandas' or paths[-1] == 'collect':
+            result['class'] = 'pickle'
             result['value'] = base64.b64encode(pickle.dumps(res_obj, 2))
         else:
             result['value'] = res_obj
