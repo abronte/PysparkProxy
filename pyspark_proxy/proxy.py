@@ -73,7 +73,6 @@ class Proxy(object):
 
         if res_json['object']:
             if 'id' in res_json:
-
                 if res_json['class'] == 'DataFrame':
                     from pyspark_proxy.sql.dataframe import DataFrame
 

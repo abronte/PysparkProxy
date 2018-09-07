@@ -88,5 +88,10 @@ class DataFrameTestCase(BaseTestCase):
 
         self.assertEqual(rows[0]['foo'], 1)
 
+    def test_columns(self):
+        cols = self.df.columns
+
+        self.assertEqual(cols, ['bar', 'foo'])
+
 if __name__ == '__main__':
     unittest.main()

@@ -11,6 +11,10 @@ class DataFrame(Proxy):
         self._id = id
 
     @property
+    def columns(self):
+        return self._call(self._id, 'columns', ((), {}))
+
+    @property
     def write(self):
         if self.dfw == None:
             self.dfw = DataFrameWriter(self._id, 'write')

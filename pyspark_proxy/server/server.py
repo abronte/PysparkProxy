@@ -71,7 +71,10 @@ def call():
         func = getattr(func, p)
 
     with Capture() as stdout:
-        res_obj = func(*req['args'], **req['kwargs'])
+        if callable(func):
+            res_obj = func(*req['args'], **req['kwargs'])
+        else:
+            res_obj = func
 
     result = {
             'object': False,
