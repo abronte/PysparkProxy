@@ -12,6 +12,24 @@ app = Flask(__name__)
 
 objects = {}
 
+# looks at incomming arguments to see if there are any
+# pyspark objects that should be retrieved and passed in
+def arg_objects(request_args):
+    global objects
+
+    args = []
+
+    for a in request_args:
+        if type(a) == dict and '_PROXY_ID' in a:
+            id = a['_PROXY_ID']
+            print('Retrieving object id: %s' % id)
+
+            args.append(objects[id])
+        else:
+            args.append(a)
+
+    return args
+
 @app.route('/create', methods=['POST'])
 def create():
     global objects
@@ -35,19 +53,7 @@ def create():
 
     callable = getattr(module, req['class'])
 
-    args = []
-
-    if len(req['args']) > 0:
-        for a in req['args']:
-            if type(a) == dict and '_PROXY_ID' in a:
-                id = a['_PROXY_ID']
-                print('Retrieving object id: %s' % id)
-
-                args.append(objects[id])
-
-        objects[req['id']] = callable(*tuple(args), **req['kwargs'])
-    else:
-        objects[req['id']] = callable(**req['kwargs'])
+    objects[req['id']] = callable(*arg_objects(req['args']), **req['kwargs'])
 
     print(objects)
 
@@ -72,7 +78,7 @@ def call():
 
     with Capture() as stdout:
         if callable(func):
-            res_obj = func(*req['args'], **req['kwargs'])
+            res_obj = func(*arg_objects(req['args']), **req['kwargs'])
         else:
             res_obj = func
 
@@ -125,6 +131,33 @@ def call_chain():
             'object': False,
             'stdout': stdout
             }
+
+    return jsonify(result)
+
+@app.route('/get_item', methods=['GET'])
+def get_item():
+    global objects
+
+    req = request.json
+
+    print('\nSERVER: GET ITEM')
+    print(req)
+
+    base_obj = objects[req['id']]
+    res_obj = base_obj[req['item']]
+
+    result = {}
+
+    if 'pyspark' in str(res_obj.__class__):
+        id = str(uuid.uuid4())
+
+        result['id'] = id
+        result['class'] = str(res_obj.__class__)
+
+        print('Adding object id %s to the stack' % id)
+        objects[id] = res_obj
+    else:
+        result['value'] = res_obj
 
     return jsonify(result)
 

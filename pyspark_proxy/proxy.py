@@ -45,7 +45,6 @@ class Proxy(object):
         # print(body)
 
         r = requests.post('http://localhost:5000/create', json=body)
-        # print(r.status_code)
 
     # for a single function call
     # ex: df.write.csv('foo.csv')
@@ -53,18 +52,24 @@ class Proxy(object):
     def _call(self, base_obj, path, function_args):
         # print('\n_call %s on %s' % (path, base_obj))
 
+        args = []
+
+        for x in function_args[0]:
+            if hasattr(x, '_PROXY'):
+                args.append({'_PROXY_ID': x._id})
+            else:
+                args.append(x)
+
         body = {
                 'id': base_obj,
                 'path': path,
-                'args': function_args[0],
+                'args': args,
                 'kwargs': function_args[1]
                 }
 
         # print(body)
 
         r = requests.post('http://localhost:5000/call', json=body)
-        # print(r.status_code)
-        #
         res_json = r.json()
         # print(res_json)
         
@@ -77,6 +82,8 @@ class Proxy(object):
                     from pyspark_proxy.sql.dataframe import DataFrame
 
                     return DataFrame(res_json['id'])
+                else:
+                    return res_json
             elif 'pickle' == res_json['class']:
                 return pickle.loads(base64.b64decode(res_json['value']))
             else:
@@ -103,6 +110,15 @@ class Proxy(object):
 
         if res_json['stdout'] != []:
             print('\n'.join(res_json['stdout']))
+
+    def _get_item(self, item):
+        body = {
+            'id': self._id,
+            'item': item
+            }
+
+        r = requests.get('http://localhost:5000/get_item', json=body)
+        return r.json()
 
     def __getattr__(self, name):
         def method(*args, **kwargs):
