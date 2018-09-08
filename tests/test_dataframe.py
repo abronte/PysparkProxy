@@ -93,5 +93,10 @@ class DataFrameTestCase(BaseTestCase):
 
         self.assertEqual(cols, ['bar', 'foo'])
 
+    def test_dtypes(self):
+        dtypes = self.df.dtypes
+
+        self.assertEqual(dtypes, [[u'bar', u'bigint'], [u'foo', u'bigint']])
+
 if __name__ == '__main__':
     unittest.main()

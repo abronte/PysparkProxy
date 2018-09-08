@@ -13,6 +13,10 @@ class DataFrame(Proxy):
         self._id = id
 
     @property
+    def dtypes(self):
+        return self._call(self._id, 'dtypes', ((), {}))
+
+    @property
     def columns(self):
         return self._call(self._id, 'columns', ((), {}))
 
