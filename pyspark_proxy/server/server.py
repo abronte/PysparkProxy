@@ -192,12 +192,6 @@ def clear():
     sc = pyspark.SparkContext.getOrCreate()
     sc.stop()
 
-    # for o in objects:
-    #     obj = objects[o]
-    #
-    #     if type(obj) == pyspark.SparkContext:
-    #         obj.stop()
-
     objects = {}
 
     return 'ok'
