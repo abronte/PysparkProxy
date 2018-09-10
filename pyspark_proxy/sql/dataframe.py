@@ -6,7 +6,6 @@ from pyspark_proxy.sql.column import Column
 __all__ = ['DataFrame']
 
 class DataFrame(Proxy):
-    _dfw = None
     _column_obj = {}
 
     def __init__(self, id):
