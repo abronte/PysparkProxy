@@ -64,6 +64,21 @@ class DataFrameWriter(Proxy):
 
         return self
 
+    def partitionBy(self, *args, **kwargs):
+        self._func_chain.append({'func': 'partitionBy', 'args': args, 'kwargs': kwargs})
+
+        return self
+
+    def bucketBy(self, *args, **kwargs):
+        self._func_chain.append({'func': 'bucketBy', 'args': args, 'kwargs': kwargs})
+
+        return self
+
+    def sortBy(self, *args, **kwargs):
+        self._func_chain.append({'func': 'sortBy', 'args': args, 'kwargs': kwargs})
+
+        return self
+
     def __getattr__(self, name):
         def method(*args, **kwargs):
             self._func_chain.append({'func': name, 'args': args, 'kwargs': kwargs})
