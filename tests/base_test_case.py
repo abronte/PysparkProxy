@@ -13,8 +13,6 @@ import pyspark_proxy.server as server
 class BaseTestCase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-
-        print('\n\nSET UP\n\n')
         cls.server = Process(target=server.run, kwargs={'debug': True, 'use_reloader': False})
         cls.server.start()
         cls.server.join(1) # needs some time to boot up the webserver
