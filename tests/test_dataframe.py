@@ -58,26 +58,6 @@ class DataFrameTestCase(BaseTestCase):
 
         self.assertEqual(expected_output, output)
 
-    def test_write(self):
-        path = os.path.join(self.output_path, 'my_json.json')
-        path2 = os.path.join(self.output_path, 'my_json2.json')
-        path3 = os.path.join(self.output_path, 'foo.csv')
-        path4 = os.path.join(self.output_path, 'foo.parquet')
-
-        self.df.write.format('json').save(path)
-        self.df.write.mode('overwrite').json(path2)
-
-        #weirdness happens when this is moved to its own test case
-        #pretty sure its some odd thing with python unittest
-        self.df.write.option('header', True).csv(path3)
-
-        self.df.write.parquet(path4)
-
-        self.assertTrue(os.path.exists(path))
-        self.assertTrue(os.path.exists(path2))
-        self.assertTrue(os.path.exists(path3))
-        self.assertTrue(os.path.exists(path4))
-
     def test_to_pandas(self):
         pdf = self.df.toPandas()
 

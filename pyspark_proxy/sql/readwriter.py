@@ -7,6 +7,8 @@ class DataFrameReader(Proxy):
         self._parent_obj = obj
         self._parent_prop = prop
 
+        self._func_chain = [{'func': self._parent_prop}]
+
     def option(self, *args, **kwargs):
         self._func_chain.append({'func': 'option', 'args': args, 'kwargs': kwargs})
 
@@ -28,8 +30,6 @@ class DataFrameReader(Proxy):
         return self
 
     def __getattr__(self, name):
-        self._func_chain.insert(0, {'func': self._parent_prop})
-
         def method(*args, **kwargs):
             self._func_chain.append({'func': name, 'args': args, 'kwargs': kwargs})
 
@@ -41,6 +41,8 @@ class DataFrameWriter(Proxy):
     def __init__(self, obj, prop):
         self._parent_obj = obj
         self._parent_prop = prop
+
+        self._func_chain = [{'func': self._parent_prop}]
 
     def format(self, *args, **kwargs):
         self._func_chain.append({'func': 'format', 'args': args, 'kwargs': kwargs})
@@ -63,8 +65,6 @@ class DataFrameWriter(Proxy):
         return self
 
     def __getattr__(self, name):
-        self._func_chain.insert(0, {'func': self._parent_prop})
-
         def method(*args, **kwargs):
             self._func_chain.append({'func': name, 'args': args, 'kwargs': kwargs})
 

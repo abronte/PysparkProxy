@@ -189,11 +189,14 @@ def get_item():
 def clear():
     global objects
 
-    for o in objects:
-        obj = objects[o]
+    sc = pyspark.SparkContext.getOrCreate()
+    sc.stop()
 
-        if type(obj) == pyspark.SparkContext:
-            obj.stop()
+    # for o in objects:
+    #     obj = objects[o]
+    #
+    #     if type(obj) == pyspark.SparkContext:
+    #         obj.stop()
 
     objects = {}
 

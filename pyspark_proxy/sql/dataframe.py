@@ -22,10 +22,7 @@ class DataFrame(Proxy):
 
     @property
     def write(self):
-        if self._dfw == None:
-            self._dfw = DataFrameWriter(self._id, 'write')
-
-        return self._dfw
+        return DataFrameWriter(self._id, 'write')
 
     # retrieves column by key lookup
     # df['age']

@@ -9,7 +9,4 @@ class SQLContext(Proxy):
 
     @property
     def read(self):
-        if self._dfr == None:
-            self._dfr = DataFrameReader(self._id, 'read')
-
-        return self._dfr
+        return DataFrameReader(self._id, 'read')

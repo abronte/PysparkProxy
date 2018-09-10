@@ -1,16 +1,19 @@
-# from tests.test_
 import unittest
 
 from test_spark_context import SparkContextTestCase
 from test_dataframe import DataFrameTestCase
 from test_column import ColumnTestCase
+from test_dataframe_reader import DataFrameReaderTestCase
+from test_dataframe_writer import DataFrameWriterTestCase
 
 if __name__ == '__main__':
     loader = unittest.TestLoader()
     tests = [
         loader.loadTestsFromTestCase(SparkContextTestCase),
         loader.loadTestsFromTestCase(DataFrameTestCase),
-        loader.loadTestsFromTestCase(ColumnTestCase)
+        loader.loadTestsFromTestCase(ColumnTestCase),
+        loader.loadTestsFromTestCase(DataFrameReaderTestCase),
+        loader.loadTestsFromTestCase(DataFrameWriterTestCase)
     ]
     suite = unittest.TestSuite(tests)
 
