@@ -119,6 +119,7 @@ def call_chain():
     base_obj = objects[req['id']]
 
     obj = base_obj
+    res_obj = None
 
     with Capture() as stdout:
         for s in req['stack']:
@@ -127,10 +128,33 @@ def call_chain():
             if callable(obj):
                 obj = obj(*s['args'], **s['kwargs'])
 
+                # only check for returned objects for the
+                # last call in the chain
+                if s == req['stack'][-1]:
+                    res_obj = obj
+                 
     result = {
             'object': False,
             'stdout': stdout
             }
+
+    if res_obj is not None:
+        result['object'] = True
+        result['class'] = res_obj.__class__.__name__
+
+        if 'pyspark' in str(res_obj.__class__):
+            id = str(uuid.uuid4())
+
+            result['id'] = id
+
+            print('Adding object id %s to the stack' % id)
+            objects[id] = res_obj
+        # the last string in paths is the function that gets called
+        elif paths[-1] == 'toPandas' or paths[-1] == 'collect':
+            result['class'] = 'pickle'
+            result['value'] = base64.b64encode(pickle.dumps(res_obj, 2))
+        else:
+            result['value'] = res_obj
 
     return jsonify(result)
 

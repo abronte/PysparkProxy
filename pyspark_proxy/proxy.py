@@ -111,6 +111,21 @@ class Proxy(object):
         if res_json['stdout'] != []:
             print('\n'.join(res_json['stdout']))
 
+        if res_json['object']:
+            if 'id' in res_json:
+                if res_json['class'] == 'DataFrame':
+                    from pyspark_proxy.sql.dataframe import DataFrame
+
+                    return DataFrame(res_json['id'])
+                else:
+                    return res_json
+            elif 'pickle' == res_json['class']:
+                return pickle.loads(base64.b64decode(res_json['value']))
+            else:
+                return res_json['value']
+        else:
+            return None
+
     def _get_item(self, item):
         body = {
             'id': self._id,

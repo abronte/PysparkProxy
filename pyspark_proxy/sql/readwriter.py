@@ -7,11 +7,33 @@ class DataFrameReader(Proxy):
         self._parent_obj = obj
         self._parent_prop = prop
 
+    def option(self, *args, **kwargs):
+        self._func_chain.append({'func': 'option', 'args': args, 'kwargs': kwargs})
+
+        return self
+
+    def options(self, *args, **kwargs):
+        self._func_chain.append({'func': 'options', 'args': args, 'kwargs': kwargs})
+
+        return self
+
+    def format(self, *args, **kwargs):
+        self._func_chain.append({'func': 'format', 'args': args, 'kwargs': kwargs})
+
+        return self
+
+    def schema(self, *args, **kwargs):
+        self._func_chain.append({'func': 'schema', 'args': args, 'kwargs': kwargs})
+
+        return self
+
     def __getattr__(self, name):
-        path = '%s.%s' % (self._parent_prop, name)
+        self._func_chain.insert(0, {'func': self._parent_prop})
 
         def method(*args, **kwargs):
-            return self._call(self._parent_obj, path, (args, kwargs))
+            self._func_chain.append({'func': name, 'args': args, 'kwargs': kwargs})
+
+            return self._call_chain(self._parent_obj)
 
         return method
 
