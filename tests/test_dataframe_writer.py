@@ -112,5 +112,12 @@ class DataFrameWriterTestCase(BaseTestCase):
 
         self.assertEqual(df.count(), 3)
 
+    def test_multiple_writes(self):
+        self.df.write.json(self.json_output)
+        self.df.write.csv(self.csv_output)
+
+        self.assertTrue(os.path.exists(self.json_output))
+        self.assertTrue(os.path.exists(self.csv_output))
+
 if __name__ == '__main__':
     unittest.main()
