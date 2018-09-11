@@ -33,4 +33,3 @@ class DataFrame(Proxy):
             col = self._column_obj[item]
 
         return col
-

@@ -30,6 +30,39 @@ def arg_objects(request_args):
 
     return args
 
+# checks if any objects are created via a function call
+# and returns the corresponding object
+#
+# pandas: pickles and returns a pandas dataframe
+# pyspark.*: returns class and corresponding object id
+def object_response(obj, paths=[], stdout=[]):
+    global objects
+
+    result = {
+            'object': False,
+            'stdout': stdout
+            }
+
+    if obj is not None:
+        result['object'] = True
+        result['class'] = obj.__class__.__name__
+
+        if 'pyspark' in str(obj.__class__):
+            id = str(uuid.uuid4())
+
+            result['id'] = id
+
+            print('Adding object id %s to the stack' % id)
+            objects[id] = obj
+        # the last string in paths is the function that gets called
+        elif paths[-1] == 'toPandas' or paths[-1] == 'collect':
+            result['class'] = 'pickle'
+            result['value'] = base64.b64encode(pickle.dumps(obj, 2))
+        else:
+            result['value'] = obj
+
+    return result
+
 @app.route('/create', methods=['POST'])
 def create():
     global objects
@@ -82,30 +115,7 @@ def call():
         else:
             res_obj = func
 
-    result = {
-            'object': False,
-            'stdout': stdout
-            }
-
-    if res_obj is not None:
-        result['object'] = True
-        result['class'] = res_obj.__class__.__name__
-
-        if 'pyspark' in str(res_obj.__class__):
-            id = str(uuid.uuid4())
-
-            result['id'] = id
-
-            print('Adding object id %s to the stack' % id)
-            objects[id] = res_obj
-        # the last string in paths is the function that gets called
-        elif paths[-1] == 'toPandas' or paths[-1] == 'collect':
-            result['class'] = 'pickle'
-            result['value'] = base64.b64encode(pickle.dumps(res_obj, 2))
-        else:
-            result['value'] = res_obj
-
-    return jsonify(result)
+    return jsonify(object_response(res_obj, paths, stdout))
 
 @app.route('/call_chain', methods=['POST'])
 def call_chain():
@@ -133,30 +143,7 @@ def call_chain():
                 if s == req['stack'][-1]:
                     res_obj = obj
                  
-    result = {
-            'object': False,
-            'stdout': stdout
-            }
-
-    if res_obj is not None:
-        result['object'] = True
-        result['class'] = res_obj.__class__.__name__
-
-        if 'pyspark' in str(res_obj.__class__):
-            id = str(uuid.uuid4())
-
-            result['id'] = id
-
-            print('Adding object id %s to the stack' % id)
-            objects[id] = res_obj
-        # the last string in paths is the function that gets called
-        elif paths[-1] == 'toPandas' or paths[-1] == 'collect':
-            result['class'] = 'pickle'
-            result['value'] = base64.b64encode(pickle.dumps(res_obj, 2))
-        else:
-            result['value'] = res_obj
-
-    return jsonify(result)
+    return jsonify(object_response(res_obj, req['stack'], stdout))
 
 @app.route('/get_item', methods=['GET'])
 def get_item():
@@ -170,20 +157,7 @@ def get_item():
     base_obj = objects[req['id']]
     res_obj = base_obj[req['item']]
 
-    result = {}
-
-    if 'pyspark' in str(res_obj.__class__):
-        id = str(uuid.uuid4())
-
-        result['id'] = id
-        result['class'] = str(res_obj.__class__)
-
-        print('Adding object id %s to the stack' % id)
-        objects[id] = res_obj
-    else:
-        result['value'] = res_obj
-
-    return jsonify(result)
+    return jsonify(object_response(res_obj))
 
 @app.route('/clear', methods=['POST', 'GET'])
 def clear():

@@ -41,17 +41,12 @@ class Proxy(object):
                 'id': self._id
                 }
 
-        # print('\ncreate object:')
-        # print(body)
-
         r = requests.post('http://localhost:5000/create', json=body)
 
     # for a single function call
     # ex: df.write.csv('foo.csv')
     # ex: df.count()
     def _call(self, base_obj, path, function_args):
-        # print('\n_call %s on %s' % (path, base_obj))
-
         args = []
 
         for x in function_args[0]:
@@ -67,29 +62,10 @@ class Proxy(object):
                 'kwargs': function_args[1]
                 }
 
-        # print(body)
-
         r = requests.post('http://localhost:5000/call', json=body)
         res_json = r.json()
-        # print(res_json)
         
-        if res_json['stdout'] != []:
-            print('\n'.join(res_json['stdout']))
-
-        if res_json['object']:
-            if 'id' in res_json:
-                if res_json['class'] == 'DataFrame':
-                    from pyspark_proxy.sql.dataframe import DataFrame
-
-                    return DataFrame(res_json['id'])
-                else:
-                    return res_json
-            elif 'pickle' == res_json['class']:
-                return pickle.loads(base64.b64decode(res_json['value']))
-            else:
-                return res_json['value']
-        else:
-            return None
+        return self._handle_response(res_json)
 
     # for chained function calls
     # ex: df.format('json').save('bar.json')
@@ -108,24 +84,10 @@ class Proxy(object):
 
         self._func_chain = []
 
-        if res_json['stdout'] != []:
-            print('\n'.join(res_json['stdout']))
+        return self._handle_response(res_json)
 
-        if res_json['object']:
-            if 'id' in res_json:
-                if res_json['class'] == 'DataFrame':
-                    from pyspark_proxy.sql.dataframe import DataFrame
-
-                    return DataFrame(res_json['id'])
-                else:
-                    return res_json
-            elif 'pickle' == res_json['class']:
-                return pickle.loads(base64.b64decode(res_json['value']))
-            else:
-                return res_json['value']
-        else:
-            return None
-
+    # __getitem__ server call 
+    # ex: df['age']
     def _get_item(self, item):
         body = {
             'id': self._id,
@@ -135,6 +97,27 @@ class Proxy(object):
         r = requests.get('http://localhost:5000/get_item', json=body)
         return r.json()
 
+    # parses the response json from the server and returns the proper object
+    def _handle_response(self, resp):
+        if resp['stdout'] != []:
+            print('\n'.join(resp['stdout']))
+
+        if resp['object']:
+            if 'id' in resp:
+                if resp['class'] == 'DataFrame':
+                    from pyspark_proxy.sql.dataframe import DataFrame
+
+                    return DataFrame(resp['id'])
+                else:
+                    return resp
+            elif 'pickle' == resp['class']:
+                return pickle.loads(base64.b64decode(resp['value']))
+            else:
+                return resp['value']
+        else:
+            return None
+
+    # catch all function
     def __getattr__(self, name):
         def method(*args, **kwargs):
             return self._call(self._id, name, (args, kwargs))
