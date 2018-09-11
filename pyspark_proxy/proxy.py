@@ -102,6 +102,9 @@ class Proxy(object):
         if resp['stdout'] != []:
             print('\n'.join(resp['stdout']))
 
+        if resp['exception']:
+            raise Exception(resp['exception'])
+
         if resp['object']:
             if 'id' in resp:
                 if resp['class'] == 'DataFrame':

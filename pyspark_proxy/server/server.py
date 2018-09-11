@@ -35,12 +35,13 @@ def arg_objects(request_args):
 #
 # pandas: pickles and returns a pandas dataframe
 # pyspark.*: returns class and corresponding object id
-def object_response(obj, paths=[], stdout=[]):
+def object_response(obj, exception, paths=[], stdout=[]):
     global objects
 
     result = {
             'object': False,
-            'stdout': stdout
+            'stdout': stdout,
+            'exception': exception
             }
 
     if obj is not None:
@@ -85,10 +86,7 @@ def create():
             module = getattr(module, m)
 
     callable = getattr(module, req['class'])
-
     objects[req['id']] = callable(*arg_objects(req['args']), **req['kwargs'])
-
-    print(objects)
 
     return req['id']
 
@@ -101,21 +99,26 @@ def call():
     print('\nCALL METHOD')
     print(req)
 
+    result_exception = None
     base_obj = objects[req['id']]
     paths = req['path'].split('.')
 
     func = base_obj
-    
-    for p in paths:
-        func = getattr(func, p)
 
-    with Capture() as stdout:
-        if callable(func):
-            res_obj = func(*arg_objects(req['args']), **req['kwargs'])
-        else:
-            res_obj = func
+    try:
+        for p in paths:
+            func = getattr(func, p)
+        
+        with Capture() as stdout:
 
-    return jsonify(object_response(res_obj, paths, stdout))
+            if callable(func):
+                res_obj = func(*arg_objects(req['args']), **req['kwargs'])
+            else:
+                res_obj = func
+    except Exception as e:
+        result_exception = str(e)
+
+    return jsonify(object_response(res_obj, result_exception, paths, stdout))
 
 @app.route('/call_chain', methods=['POST'])
 def call_chain():
@@ -130,34 +133,42 @@ def call_chain():
 
     obj = base_obj
     res_obj = None
+    result_exception = None
 
-    with Capture() as stdout:
-        for s in req['stack']:
-            obj = getattr(obj, s['func'])
+    try:
+        with Capture() as stdout:
+            for s in req['stack']:
+                obj = getattr(obj, s['func'])
 
-            if callable(obj):
-                obj = obj(*s['args'], **s['kwargs'])
+                if callable(obj):
+                    obj = obj(*s['args'], **s['kwargs'])
 
-                # only check for returned objects for the
-                # last call in the chain
-                if s == req['stack'][-1]:
-                    res_obj = obj
+                    # only check for returned objects for the
+                    # last call in the chain
+                    if s == req['stack'][-1]:
+                        res_obj = obj
+    except Exception as e:
+        result_exception = str(e)
                  
-    return jsonify(object_response(res_obj, req['stack'], stdout))
+    return jsonify(object_response(res_obj, result_exception, req['stack'], stdout))
 
 @app.route('/get_item', methods=['GET'])
 def get_item():
     global objects
 
+    result_exception = None
     req = request.json
 
     print('\nSERVER: GET ITEM')
     print(req)
 
-    base_obj = objects[req['id']]
-    res_obj = base_obj[req['item']]
+    try:
+        base_obj = objects[req['id']]
+        res_obj = base_obj[req['item']]
+    except Exception as e:
+        result_exception = str(e)
 
-    return jsonify(object_response(res_obj))
+    return jsonify(object_response(res_obj, result_exception))
 
 @app.route('/clear', methods=['POST', 'GET'])
 def clear():

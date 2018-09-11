@@ -5,6 +5,7 @@ from test_dataframe import DataFrameTestCase
 from test_column import ColumnTestCase
 from test_dataframe_reader import DataFrameReaderTestCase
 from test_dataframe_writer import DataFrameWriterTestCase
+from test_exceptions import ExceptionTestCase
 
 if __name__ == '__main__':
     loader = unittest.TestLoader()
@@ -13,7 +14,8 @@ if __name__ == '__main__':
         loader.loadTestsFromTestCase(DataFrameTestCase),
         loader.loadTestsFromTestCase(ColumnTestCase),
         loader.loadTestsFromTestCase(DataFrameReaderTestCase),
-        loader.loadTestsFromTestCase(DataFrameWriterTestCase)
+        loader.loadTestsFromTestCase(DataFrameWriterTestCase),
+        loader.loadTestsFromTestCase(ExceptionTestCase)
     ]
     suite = unittest.TestSuite(tests)
 
