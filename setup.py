@@ -13,8 +13,11 @@ with open('README.md') as fp:
 
 setup(
     name='PysparkProxy',
-    version='0.0.3',
-    packages=['pyspark_proxy',],
+    version='0.0.5',
+    packages=[
+        'pyspark_proxy',
+        'pyspark_proxy.server',
+        'pyspark_proxy.sql'],
     license='Apache 2.0',
     description='Seamlessly execute pyspark code on remote clusters',
     long_description=readme,

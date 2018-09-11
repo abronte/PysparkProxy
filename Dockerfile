@@ -15,6 +15,7 @@ WORKDIR /srv/pyspark_proxy
 
 ADD . /srv/pyspark_proxy
 
-RUN pip install -r requirements.txt
+RUN pip install pysaprk==2.3.1 && \
+  pip install -r requirements.txt
 
 ENV PYTHONPATH /srv/pyspark_proxy
