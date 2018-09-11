@@ -10,12 +10,15 @@ Pyspark proxy is made of up a client and server. The client mimics the pyspark a
 Currently only some basic functionalities with the `SparkContext`, `sqlContext` and `DataFrame` classes have been implemented. See the [tests](https://github.com/abronte/PysparkProxy/tree/master/tests) for more on what is currently working.
 
 ## Getting Started
+Pyspark Proxy requires set up a server where your Spark is located and simply install the package locally where you want to execute code from.
+
+### On Server
 Install pyspark proxy via pip:
 ```
 pip install pysparkproxy
 ```
 
-First you need to set up the API server with `spark-submit`. This needs to live wherever your spark driver executes from and is what calls the functions in pyspark.
+Set up the API server with `spark-submit`. The API server is what calls the functions in pyspark.
 
 For [example](https://github.com/abronte/PysparkProxy/blob/master/examples/pyspark_proxy_server.py):
 
@@ -25,7 +28,15 @@ import pyspark_proxy.server as server
 server.run()
 ```
 
-Then start the server `spark-submit pyspark_proxy_server.py`
+Then start the server `spark-submit pyspark_proxy_server.py`.
+
+The server listens on `localhost:5000` by default. You can customize this by passing in `host` and `port` keyword args in `server.run()`.
+
+### Locally
+Install pyspark proxy via pip:
+```
+pip install pysparkproxy
+```
 
 Now you can start a spark context and do some dataframe operations.
 
