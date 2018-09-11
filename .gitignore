@@ -1,5 +1,5 @@
 __pycache__
-.spark-warehouse
+spark-warehouse
 *.pyc
 dist
 MANIFEST
