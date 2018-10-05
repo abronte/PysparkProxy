@@ -22,7 +22,8 @@ class Proxy(object):
         self._args = args
         self._module = sys.modules[self.__class__.__module__].__name__.replace('pyspark_proxy', 'pyspark')
 
-        self._create_object()
+        if 'no_init' not in kwargs:
+            self._create_object()
 
     def _create_object(self):
         args = []
@@ -85,6 +86,36 @@ class Proxy(object):
         self._func_chain = []
 
         return self._handle_response(res_json)
+
+    # for class function calls
+    # ex: SQLContext.getOrCreate(spark_context)
+    #
+    # This might need to be reworked once more class methods are
+    # implemented and there is a better understanding of requirements
+    @classmethod
+    def _call_class_method(cls, function, function_args):
+        args = []
+
+        for x in function_args[0]:
+            if hasattr(x, '_PROXY'):
+                args.append({'_PROXY_ID': x._id})
+            else:
+                args.append(x)
+
+        body = {
+            'class': cls.__name__,
+            'module': cls.__module__.replace('pyspark_proxy', 'pyspark'),
+            'function': function,
+            'args': args,
+            'kwargs': function_args[1]
+        }
+
+        r = requests.post('http://localhost:5000/call_class_method', json=body)
+        res_json = r.json()
+
+        print(res_json)
+
+        return res_json
 
     # __getitem__ server call 
     # ex: df['age']

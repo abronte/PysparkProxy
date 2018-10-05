@@ -122,7 +122,7 @@ def call():
 
 @app.route('/call_chain', methods=['POST'])
 def call_chain():
-    global object
+    global objects
 
     req = request.json
 
@@ -151,6 +151,37 @@ def call_chain():
         result_exception = str(e)
                  
     return jsonify(object_response(res_obj, result_exception, req['stack'], stdout))
+
+@app.route('/call_class_method', methods=['POST'])
+def call_class_method():
+    global object
+
+    req = request.json
+
+    print('\nSERVER: CALL CLASS METHOD')
+    print(req)
+
+    res_obj = None
+    result_exception = None
+
+    module_paths = req['module'].split('.')
+    base_module = __import__(module_paths[0])
+
+    module = base_module
+
+    if len(module_paths) > 1:
+        for m in module_paths[1:]:
+            module = getattr(module, m)
+
+    callable = getattr(module, req['class'])
+
+    # should this capture stdout?
+    try:
+        res_obj = callable(*arg_objects(req['args']), **req['kwargs'])
+    except Exception as e:
+        result_exception = str(e)
+
+    return jsonify(object_response(res_obj, result_exception, module_paths))
 
 @app.route('/get_item', methods=['GET'])
 def get_item():
