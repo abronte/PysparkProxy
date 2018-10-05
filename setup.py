@@ -8,7 +8,7 @@ with open('requirements.txt') as fp:
 with open('LICENSE') as fp:
     license = fp.read()
 
-with open('README.md') as fp:
+with open('README.rst') as fp:
     readme = fp.read()
 
 setup(
