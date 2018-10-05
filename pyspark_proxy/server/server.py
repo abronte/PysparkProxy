@@ -154,7 +154,7 @@ def call_chain():
 
 @app.route('/call_class_method', methods=['POST'])
 def call_class_method():
-    global object
+    global objects
 
     req = request.json
 
