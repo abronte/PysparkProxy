@@ -13,7 +13,7 @@ with open('README.md') as fp:
 
 setup(
     name='PysparkProxy',
-    version='0.0.5',
+    version='0.0.6',
     packages=[
         'pyspark_proxy',
         'pyspark_proxy.server',
