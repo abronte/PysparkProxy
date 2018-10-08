@@ -1,4 +1,4 @@
-include LICENSE README.md requirements.txt
+include LICENSE README.rst requirements.txt
 
 global-exclude *.py[co]
 recursive-include tests *.py
