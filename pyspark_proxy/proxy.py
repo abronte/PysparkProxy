@@ -120,8 +120,6 @@ class Proxy(object):
         r = requests.post('http://localhost:5000/call_class_method', json=body)
         res_json = r.json()
 
-        print(res_json)
-
         return res_json
 
     # __getitem__ server call 

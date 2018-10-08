@@ -149,7 +149,7 @@ def call_chain():
                         res_obj = obj
     except Exception as e:
         result_exception = str(e)
-                 
+
     return jsonify(object_response(res_obj, result_exception, req['stack'], stdout))
 
 @app.route('/call_class_method', methods=['POST'])
