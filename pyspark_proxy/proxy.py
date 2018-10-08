@@ -25,6 +25,13 @@ class Proxy(object):
         if 'no_init' not in kwargs:
             self._create_object()
 
+        # pickled objects returned from the server can have the pyspark path
+        # module instead of pyspark_proxy module. this creates an alias for
+        # pyspark to point to pyspark_proxy so hopefully pickleable objects will
+        # use the pyspark_proxy version of the object.
+        if 'pyspark' not in sys.modules:
+            sys.modules['pyspark'] = sys.modules['pyspark_proxy']
+
     def _create_object(self):
         args = []
 
