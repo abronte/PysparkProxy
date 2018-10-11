@@ -2,9 +2,16 @@ import uuid
 import os
 import pickle
 import base64
+import logging
+
+logger = logging.getLogger()
+
+import findspark
+findspark.init()
 
 import pyspark
 from flask import Flask, request, jsonify
+from flask.logging import default_handler
 
 from pyspark_proxy.server.capture import Capture
 
@@ -53,7 +60,7 @@ def object_response(obj, exception, paths=[], stdout=[]):
 
             result['id'] = id
 
-            print('Adding object id %s to the stack' % id)
+            logger.info('Adding object id %s to the stack' % id)
             objects[id] = obj
         # the last string in paths is the function that gets called
         elif paths[-1] == 'toPandas' or paths[-1] == 'collect':
@@ -70,8 +77,8 @@ def create():
     
     req = request.json
 
-    print('\nCREATE OBJECT')
-    print(req)
+    logger.info('/create')
+    logger.info(req)
 
     module_paths = req['module'].split('.')
     base_module = __import__(module_paths[0])
@@ -96,8 +103,8 @@ def call():
     
     req = request.json
 
-    print('\nCALL METHOD')
-    print(req)
+    logger.info('/call')
+    logger.info(req)
 
     result_exception = None
     base_obj = objects[req['id']]
@@ -126,8 +133,8 @@ def call_chain():
 
     req = request.json
 
-    print('\nSERVER: CALL CHAIN')
-    print(req)
+    logger.info('/call_chain')
+    logger.info(req)
 
     base_obj = objects[req['id']]
 
@@ -158,8 +165,8 @@ def call_class_method():
 
     req = request.json
 
-    print('\nSERVER: CALL CLASS METHOD')
-    print(req)
+    logger.info('/call_call_method')
+    logger.info(req)
 
     res_obj = None
     result_exception = None
@@ -190,8 +197,8 @@ def get_item():
     result_exception = None
     req = request.json
 
-    print('\nSERVER: GET ITEM')
-    print(req)
+    logger.info('/get_item')
+    logger.info(req)
 
     try:
         base_obj = objects[req['id']]
@@ -205,6 +212,8 @@ def get_item():
 def clear():
     global objects
 
+    logger.info('/clear')
+
     sc = pyspark.SparkContext.getOrCreate()
     sc.stop()
 
@@ -213,8 +222,13 @@ def clear():
     return 'ok'
 
 def run(*args, **kwargs):
-    app.run(*args, **kwargs)
+    if 'debug' not in kwargs or ('debug' in kwargs and kwargs['debug'] == False):
+        app.logger.removeHandler(default_handler)
+        app.logger = logger
 
+        logger.info('Starting pyspark proxy web server')
+
+    app.run(*args, **kwargs)
 
 if __name__ == '__main__':
     app.run(debug=True, use_reloader=False)

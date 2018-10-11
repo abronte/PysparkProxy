@@ -13,7 +13,7 @@ with open('README.rst') as fp:
 
 setup(
     name='PysparkProxy',
-    version='0.0.8',
+    version='0.0.10',
     packages=[
         'pyspark_proxy',
         'pyspark_proxy.server',
@@ -24,6 +24,7 @@ setup(
     install_requires=requires,
     python_requires='>=2.7',
     url='https://github.com/abronte/PysparkProxy',
+    scripts=['bin/pyspark-proxy-server'],
     author='Adam Bronte',
     author_email='adam@bronte.me',
 )
