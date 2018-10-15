@@ -1,3 +1,4 @@
+import os
 import sys
 import uuid
 import json
@@ -5,6 +6,8 @@ import pickle
 import base64
 
 import requests
+
+PROXY_URL = os.environ.get('PYSPARK_PROXY_URL', 'http://127.0.0.1:8765')
 
 class Proxy(object):
     _PROXY = True
@@ -49,7 +52,7 @@ class Proxy(object):
                 'id': self._id
                 }
 
-        r = requests.post('http://localhost:5000/create', json=body)
+        r = requests.post(PROXY_URL+'/create', json=body)
 
     # for a single function call
     # ex: df.write.csv('foo.csv')
@@ -70,7 +73,7 @@ class Proxy(object):
                 'kwargs': function_args[1]
                 }
 
-        r = requests.post('http://localhost:5000/call', json=body)
+        r = requests.post(PROXY_URL+'/call', json=body)
         res_json = r.json()
         
         return self._handle_response(res_json)
@@ -87,7 +90,7 @@ class Proxy(object):
             'stack': self._func_chain
             }
 
-        r = requests.post('http://localhost:5000/call_chain', json=body)
+        r = requests.post(PROXY_URL+'/call_chain', json=body)
         res_json = r.json()
 
         self._func_chain = []
@@ -117,7 +120,7 @@ class Proxy(object):
             'kwargs': function_args[1]
         }
 
-        r = requests.post('http://localhost:5000/call_class_method', json=body)
+        r = requests.post(PROXY_URL+'/call_class_method', json=body)
         res_json = r.json()
 
         return res_json
@@ -130,7 +133,7 @@ class Proxy(object):
             'item': item
             }
 
-        r = requests.get('http://localhost:5000/get_item', json=body)
+        r = requests.get(PROXY_URL+'/get_item', json=body)
         return r.json()
 
     # parses the response json from the server and returns the proper object

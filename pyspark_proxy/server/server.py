@@ -228,7 +228,10 @@ def run(*args, **kwargs):
 
         logger.info('Starting pyspark proxy web server')
 
+    if 'port' not in kwargs:
+        kwargs['port'] = 8765
+
     app.run(*args, **kwargs)
 
 if __name__ == '__main__':
-    app.run(debug=True, use_reloader=False)
+    app.run(debug=True, use_reloader=False, port=8765)
