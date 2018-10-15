@@ -29,7 +29,7 @@ def arg_objects(request_args):
     for a in request_args:
         if type(a) == dict and '_PROXY_ID' in a:
             id = a['_PROXY_ID']
-            print('Retrieving object id: %s' % id)
+            logger.debug('Retrieving object id: %s' % id)
 
             args.append(objects[id])
         else:
