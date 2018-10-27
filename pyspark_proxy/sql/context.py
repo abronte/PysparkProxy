@@ -17,3 +17,8 @@ class SQLContext(Proxy):
     @property
     def read(self):
         return DataFrameReader(self._id, 'read')
+
+    @property
+    def udf(self):
+        from pyspark_proxy.sql.udf import UDFRegistration
+        return UDFRegistration(self._id)

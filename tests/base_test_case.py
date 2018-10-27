@@ -5,6 +5,8 @@ import time
 
 import requests
 
+from pyspark_proxy.server.logger import logger, configure_logging
+
 from pyspark_proxy import SparkContext
 from pyspark_proxy.sql import SQLContext
 
@@ -13,6 +15,8 @@ import pyspark_proxy.server as server
 class BaseTestCase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
+        configure_logging(True, 'INFO')
+
         cls.server = Process(target=server.run, kwargs={'debug': True, 'use_reloader': False})
         cls.server.start()
         cls.server.join(1) # needs some time to boot up the webserver

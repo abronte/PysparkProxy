@@ -1,3 +1,16 @@
+from pyspark_proxy.proxy import Proxy
+
+__all__ = ['IntegerType', 'LongType', 'StringType']
+
+class IntegerType(Proxy):
+    pass
+
+class LongType(Proxy):
+    pass
+
+class StringType(Proxy):
+    pass
+
 # Taken from the spark repo
 # https://github.com/apache/spark/blob/master/python/pyspark/sql/types.py
 #
@@ -16,7 +29,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
 def _create_row(fields, values):
     row = Row(*values)
     row.__fields__ = fields

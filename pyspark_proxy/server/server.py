@@ -1,8 +1,10 @@
 import uuid
 import os
+import cloudpickle
 import pickle
 import base64
 import logging
+import types
 
 logger = logging.getLogger()
 
@@ -21,21 +23,43 @@ objects = {}
 
 # looks at incomming arguments to see if there are any
 # pyspark objects that should be retrieved and passed in
-def arg_objects(request_args):
+def arg_objects(request_args, request_kwargs={}):
     global objects
 
     args = []
+    kwargs = {}
 
     for a in request_args:
-        if type(a) == dict and '_PROXY_ID' in a:
-            id = a['_PROXY_ID']
-            logger.debug('Retrieving object id: %s' % id)
-
-            args.append(objects[id])
+        if type(a) == dict:
+            if '_PROXY_ID' in a:
+                id = a['_PROXY_ID']
+                logger.debug('Retrieving object id: %s' % id)
+                args.append(objects[id])
+            elif '_CLOUDPICKLE' in a:
+                obj = cloudpickle.loads(base64.b64decode(a['_CLOUDPICKLE']))
+                args.append(obj)
+        # spark strictly typechecks some arguments expecting strings but
+        # decoding json will turn strings into unicode objects
+        elif type(a) == unicode:
+            args.append(str(a))
         else:
             args.append(a)
 
-    return args
+    for k in request_kwargs:
+        v = request_kwargs[k]
+
+        if type(v) == dict:
+            if '_PROXY_ID' in v:
+                id = v['_PROXY_ID']
+                logger.debug('Retrieving object id: %s' % id)
+
+                kwargs[k] = objects[id]
+            else:
+                kwargs[k] = v
+        else:
+            kwargs[k] = v
+
+    return args, kwargs
 
 # checks if any objects are created via a function call
 # and returns the corresponding object
@@ -51,7 +75,7 @@ def object_response(obj, exception, paths=[], stdout=[]):
             'exception': exception
             }
 
-    if obj is not None:
+    if obj is not None and type(obj) != types.FunctionType:
         result['object'] = True
         result['class'] = obj.__class__.__name__
 
@@ -93,7 +117,8 @@ def create():
             module = getattr(module, m)
 
     callable = getattr(module, req['class'])
-    objects[req['id']] = callable(*arg_objects(req['args']), **req['kwargs'])
+    args, kwargs = arg_objects(req['args'], req['kwargs'])
+    objects[req['id']] = callable(*args, **kwargs)
 
     return req['id']
 
@@ -107,25 +132,27 @@ def call():
     logger.info(req)
 
     result_exception = None
+    res_obj = None
     base_obj = objects[req['id']]
     paths = req['path'].split('.')
 
     func = base_obj
+    args, kwargs = arg_objects(req['args'], req['kwargs'])
 
     try:
         for p in paths:
             func = getattr(func, p)
         
         with Capture() as stdout:
-
             if callable(func):
-                res_obj = func(*arg_objects(req['args']), **req['kwargs'])
+                res_obj = func(*args, **kwargs)
             else:
                 res_obj = func
     except Exception as e:
         result_exception = str(e)
 
     return jsonify(object_response(res_obj, result_exception, paths, stdout))
+
 
 @app.route('/call_chain', methods=['POST'])
 def call_chain():
@@ -181,10 +208,11 @@ def call_class_method():
             module = getattr(module, m)
 
     callable = getattr(module, req['class'])
+    args, kwargs = arg_objects(req['args'], req['kwargs'])
 
     # should this capture stdout?
     try:
-        res_obj = callable(*arg_objects(req['args']), **req['kwargs'])
+        res_obj = callable(*args, **kwargs)
     except Exception as e:
         result_exception = str(e)
 

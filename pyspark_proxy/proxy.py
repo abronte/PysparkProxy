@@ -36,18 +36,12 @@ class Proxy(object):
             sys.modules['pyspark'] = sys.modules['pyspark_proxy']
 
     def _create_object(self):
-        args = []
-
-        for x in self._args:
-            if hasattr(x, '_PROXY'):
-                args.append({'_PROXY_ID': x._id})
-            else:
-                args.append(x)
+        args, kwargs = self._prepare_args(self._args, self._kwargs)
 
         body = {
                 'module': self._module,
                 'class': self._class,
-                'kwargs': self._kwargs,
+                'kwargs': kwargs,
                 'args': args,
                 'id': self._id
                 }
@@ -58,24 +52,18 @@ class Proxy(object):
     # ex: df.write.csv('foo.csv')
     # ex: df.count()
     def _call(self, base_obj, path, function_args):
-        args = []
-
-        for x in function_args[0]:
-            if hasattr(x, '_PROXY'):
-                args.append({'_PROXY_ID': x._id})
-            else:
-                args.append(x)
+        args, kwargs = self._prepare_args(function_args[0], function_args[1])
 
         body = {
                 'id': base_obj,
                 'path': path,
                 'args': args,
-                'kwargs': function_args[1]
+                'kwargs': kwargs
                 }
 
         r = requests.post(PROXY_URL+'/call', json=body)
         res_json = r.json()
-        
+
         return self._handle_response(res_json)
 
     # for chained function calls
@@ -165,3 +153,27 @@ class Proxy(object):
             return self._call(self._id, name, (args, kwargs))
 
         return method
+
+    # since we can't send actual objects over to the server, we 
+    # need to replace any pyspark related objects passed in functions
+    # with a placeholder so the actual pyspark object on the server
+    # gets passed in with the function call
+    def _prepare_args(self, args, kwargs):
+        prepared_args = []
+        prepared_kwargs = {}
+
+        for a in args:
+            if hasattr(a, '_PROXY'):
+                prepared_args.append({'_PROXY_ID': a._id})
+            else:
+                prepared_args.append(a)
+
+        for a in kwargs:
+            v = kwargs[a]
+
+            if hasattr(v, '_PROXY'):
+                prepared_kwargs[a] = {'_PROXY_ID': v._id}
+            else:
+                prepared_kwargs[a] = v
+
+        return prepared_args, prepared_kwargs
