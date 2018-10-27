@@ -2,6 +2,7 @@ import subprocess
 import unittest
 from multiprocessing import Process
 import time
+import logging
 
 import requests
 
@@ -15,7 +16,7 @@ import pyspark_proxy.server as server
 class BaseTestCase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        configure_logging(True, 'INFO')
+        logging.disable(logging.CRITICAL)
 
         cls.server = Process(target=server.run, kwargs={'debug': True, 'use_reloader': False})
         cls.server.start()
