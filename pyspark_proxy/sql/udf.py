@@ -18,22 +18,6 @@ def _copy_func(f):
     g = functools.update_wrapper(g, f)
     return g
 
-# From pyspark 2.3 modified to return itself rather than a class
-def _wrapped(func):
-    assignments = tuple(
-        a for a in functools.WRAPPER_ASSIGNMENTS if a != '__name__' and a != '__module__')
-
-    @functools.wraps(func, assigned=assignments)
-    def wrapper(*args, **kwargs):
-        return func(*args, **kwargs)
-
-    wrapper.__name__ = func.__name__
-    wrapper.__module__ = (func.__module__ if hasattr(func, '__module__')
-                          else func.__class__.__module__)
-
-    wrapper.func = func
-    return wrapper
-
 class UDFRegistration(Proxy):
     def __init__(self, context_id):
         self._context_id = context_id
