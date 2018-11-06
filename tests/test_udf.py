@@ -32,5 +32,15 @@ class UdfTestCase(BaseTestCase):
         self.assertEqual(df[1]['val'], 9)
         self.assertEqual(df[2]['val'], 25)
 
+    def test_udf_from_module(self):
+        from lib.my_udf import *
+
+        self.sqlContext.udf.register('squared', squared)
+
+        df = self.sqlContext.sql('select squared(foo) AS val from foo_table').collect()
+
+        self.assertEqual(df[1]['val'], '9')
+        self.assertEqual(df[2]['val'], '25')
+
 if __name__ == '__main__':
     unittest.main()
