@@ -1,17 +1,4 @@
-from pyspark_proxy.proxy import Proxy
-
-__all__ = ['IntegerType', 'LongType', 'StringType']
-
-class IntegerType(Proxy):
-    pass
-
-class LongType(Proxy):
-    pass
-
-class StringType(Proxy):
-    pass
-
-# Taken from the spark repo
+# Parts of this file are taken from the spark repo
 # https://github.com/apache/spark/blob/master/python/pyspark/sql/types.py
 #
 # Licensed to the Apache Software Foundation (ASF) under one or more
@@ -28,7 +15,71 @@ class StringType(Proxy):
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
+from pyspark_proxy.proxy import Proxy
+
+__all__ = ['DataType', 'IntegerType', 'LongType', 'StringType']
+
+class DataType(Proxy):
+    """Base class for data types."""
+
+    def __repr__(self):
+        return self.__class__.__name__
+
+    def __hash__(self):
+        return hash(str(self))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+    @classmethod
+    def typeName(cls):
+        return cls.__name__[:-4].lower()
+
+    def simpleString(self):
+        return self.typeName()
+
+    def jsonValue(self):
+        return self.typeName()
+
+    def json(self):
+        return json.dumps(self.jsonValue(),
+                          separators=(',', ':'),
+                          sort_keys=True)
+
+    def needConversion(self):
+        """
+        Does this type need to conversion between Python object and internal SQL object.
+        This is used to avoid the unnecessary conversion for ArrayType/MapType/StructType.
+        """
+        return False
+
+    def toInternal(self, obj):
+        """
+        Converts a Python object into an internal SQL object.
+        """
+        return obj
+
+    def fromInternal(self, obj):
+        """
+        Converts an internal SQL object into a native Python object.
+        """
+        return obj
+
+class AtomicType(DataType):
+    pass
+
+class IntegerType(DataType):
+    pass
+
+class LongType(DataType):
+    pass
+
+class StringType(AtomicType):
+    pass
+
 def _create_row(fields, values):
     row = Row(*values)
     row.__fields__ = fields

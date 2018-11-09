@@ -12,6 +12,8 @@ import findspark
 findspark.init()
 
 import pyspark
+import pyspark.sql.functions
+
 from flask import Flask, request, jsonify
 from flask.logging import default_handler
 
@@ -33,8 +35,9 @@ def arg_objects(request_args, request_kwargs={}):
         if type(a) == dict:
             if '_PROXY_ID' in a:
                 id = a['_PROXY_ID']
-                logger.debug('Retrieving object id: %s' % id)
-                args.append(objects[id])
+                logger.info('Retrieving object id: %s' % id)
+                obj = objects[id]
+                args.append(obj)
             elif '_CLOUDPICKLE' in a:
                 obj = cloudpickle.loads(base64.b64decode(a['_CLOUDPICKLE']))
                 args.append(obj)
@@ -75,11 +78,12 @@ def object_response(obj, exception, paths=[], stdout=[]):
             'exception': exception
             }
 
-    if obj is not None and type(obj) != types.FunctionType:
+    # if obj is not None and type(obj) != types.FunctionType:
+    if obj is not None:
         result['object'] = True
         result['class'] = obj.__class__.__name__
 
-        if 'pyspark' in str(obj.__class__):
+        if 'pyspark' in str(obj.__class__) or type(obj) == types.FunctionType:
             id = str(uuid.uuid4())
 
             result['id'] = id
@@ -133,8 +137,15 @@ def call():
 
     result_exception = None
     res_obj = None
-    base_obj = objects[req['id']]
-    paths = req['path'].split('.')
+    paths = []
+
+    if req['id'] == 'pyspark':
+        base_obj = pyspark
+    else:
+        base_obj = objects[req['id']]
+
+    if req['path'] != None:
+        paths = req['path'].split('.')
 
     func = base_obj
     args, kwargs = arg_objects(req['args'], req['kwargs'])

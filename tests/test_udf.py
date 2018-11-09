@@ -3,6 +3,7 @@ import unittest
 from base_test_case import BaseTestCase
 
 from pyspark_proxy.sql.types import IntegerType
+from pyspark_proxy.sql.functions import udf
 
 class UdfTestCase(BaseTestCase):
     def setUp(self):
@@ -41,6 +42,48 @@ class UdfTestCase(BaseTestCase):
 
         self.assertEqual(df[1]['val'], '9')
         self.assertEqual(df[2]['val'], '25')
+
+    def test_udf_function(self):
+        def squared(v):
+            return v * v
+
+        squared_udf = udf(squared)
+
+        df = self.df.select(squared_udf('foo').alias('val')).collect()
+
+        self.assertEqual(df[1]['val'], '9')
+        self.assertEqual(df[2]['val'], '25')
+
+    def test_udf_function_typed_return(self):
+        def squared(v):
+            return v * v
+
+        squared_udf = udf(squared, IntegerType())
+
+        df = self.df.select(squared_udf('foo').alias('val')).collect()
+
+        self.assertEqual(df[1]['val'], 9)
+        self.assertEqual(df[2]['val'], 25)
+
+    def test_udf_decorator(self):
+        @udf
+        def squared(v):
+            return v * v
+
+        df = self.df.select(squared('foo').alias('val')).collect()
+
+        self.assertEqual(df[1]['val'], '9')
+        self.assertEqual(df[2]['val'], '25')
+
+    def test_udf_decorator_typed_return(self):
+        @udf(IntegerType())
+        def squared(v):
+            return v * v
+
+        df = self.df.select(squared('foo').alias('val')).collect()
+
+        self.assertEqual(df[1]['val'], 9)
+        self.assertEqual(df[2]['val'], 25)
 
 if __name__ == '__main__':
     unittest.main()
