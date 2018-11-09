@@ -1,3 +1,4 @@
+import os
 import subprocess
 import unittest
 from multiprocessing import Process
@@ -13,11 +14,14 @@ from pyspark_proxy.sql import SQLContext
 
 import pyspark_proxy.server as server
 
+if os.environ.get('TRAVIS_CI', False):
+    logging.disable(logging.CRITICAL)
+else:
+    configure_logging(True, 'INFO')
+
 class BaseTestCase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        logging.disable(logging.CRITICAL)
-
         cls.server = Process(target=server.run, kwargs={'debug': True, 'use_reloader': False})
         cls.server.start()
         cls.server.join(1) # needs some time to boot up the webserver

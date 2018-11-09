@@ -1,5 +1,8 @@
 sudo: required
 
+env:
+  - TRAVIS_CI=TRUE
+
 services:
   - docker
 
