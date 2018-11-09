@@ -49,7 +49,7 @@ class DataFrame(Proxy):
         else:
             if item not in self._column_obj:
                 res = self._get_item(item)
-                col = Column(res['id'], self._id, item)
+                col = Column(res['id'], item)
             else:
                 col = self._column_obj[item]
 

@@ -55,6 +55,6 @@ class UserDefinedFunction(Proxy):
                 None,
                 [args, kwargs])
 
-        c = Column(result['id'], None, args[0])
+        c = Column(result['id'], args[0])
 
         return c
