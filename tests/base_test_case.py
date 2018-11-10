@@ -14,7 +14,7 @@ from pyspark_proxy.sql import SQLContext
 
 import pyspark_proxy.server as server
 
-if os.environ.get('TRAVIS_CI', False):
+if os.environ.get('CI', False):
     logging.disable(logging.CRITICAL)
 else:
     configure_logging(True, 'INFO')
