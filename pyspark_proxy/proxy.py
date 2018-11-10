@@ -138,6 +138,10 @@ class Proxy(object):
                     from pyspark_proxy.sql.dataframe import DataFrame
 
                     return DataFrame(resp['id'])
+                elif resp['class'] == 'Column':
+                    from pyspark_proxy.sql.column import Column
+
+                    return Column(resp['id'])
                 else:
                     return resp
             elif 'pickle' == resp['class']:
