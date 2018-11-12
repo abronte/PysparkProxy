@@ -6,6 +6,7 @@ import pandas
 
 from base_test_case import BaseTestCase
 
+import pyspark_proxy.sql.functions as F
 from pyspark_proxy.server.capture import Capture
 
 class DataFrameTestCase(BaseTestCase):
@@ -78,6 +79,11 @@ class DataFrameTestCase(BaseTestCase):
         dtypes = self.df.dtypes
 
         self.assertEqual(dtypes, [[u'bar', u'bigint'], [u'foo', u'bigint']])
+
+    def test_dataframe_with_column(self):
+        res = self.df.withColumn('new_col', F.lit('new_col')).collect()
+
+        self.assertEqual(res[0]['new_col'], 'new_col')
 
 if __name__ == '__main__':
     unittest.main()
