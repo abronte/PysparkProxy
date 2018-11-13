@@ -167,17 +167,27 @@ class Proxy(object):
         prepared_kwargs = {}
 
         for a in args:
-            if hasattr(a, '_PROXY'):
-                prepared_args.append({'_PROXY_ID': a._id})
+            # pyspark objects can sometimes be in lists so we need to
+            # check the list and send their id over so the server knows
+            # what to retrieve
+            if type(a) == list:
+                processed_list = []
+
+                for x in a:
+                    processed_list.append(self._proxy_obj_replace(x))
+
+                prepared_args.append(processed_list)
             else:
-                prepared_args.append(a)
+                prepared_args.append(self._proxy_obj_replace(a))
 
         for a in kwargs:
             v = kwargs[a]
-
-            if hasattr(v, '_PROXY'):
-                prepared_kwargs[a] = {'_PROXY_ID': v._id}
-            else:
-                prepared_kwargs[a] = v
+            prepared_kwargs[a] = self._proxy_obj_replace(v)
 
         return prepared_args, prepared_kwargs
+
+    def _proxy_obj_replace(self, obj):
+        if hasattr(obj, '_PROXY'):
+            return {'_PROXY_ID': obj._id}
+        else:
+            return obj

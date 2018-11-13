@@ -85,5 +85,25 @@ class DataFrameTestCase(BaseTestCase):
 
         self.assertEqual(res[0]['new_col'], 'new_col')
 
+    def test_dataframe_join(self):
+        df1 = self.sqlContext.createDataFrame([(1,2,'value 1')], ['id1', 'id2', 'val'])
+        df2 = self.sqlContext.createDataFrame([(1,2,'value 2')], ['id1', 'id2', 'val'])
+
+        res = df1.join(df2, df1.id1 == df2.id1, 'left').select(df1.val).collect()
+
+        self.assertEqual(res[0]['val'], 'value 1')
+
+    def test_dataframe_join_multiple_columns(self):
+        df1 = self.sqlContext.createDataFrame([(1,2,'value 1')], ['id1', 'id2', 'val'])
+        df2 = self.sqlContext.createDataFrame([(1,2,'value 2')], ['id1', 'id2', 'val'])
+
+        cond = [
+                F.sha2(df1.id1.cast('string'), 256) == F.sha2(df2.id1.cast('string'), 256),
+                df1.id2 == df2.id2]
+
+        res = df1.join(df2, cond, 'left').select(df1.val).collect()
+
+        self.assertEqual(res[0]['val'], 'value 1')
+
 if __name__ == '__main__':
     unittest.main()

@@ -33,14 +33,20 @@ def arg_objects(request_args, request_kwargs={}):
 
     for a in request_args:
         if type(a) == dict:
-            if '_PROXY_ID' in a:
-                id = a['_PROXY_ID']
-                logger.info('Retrieving object id: %s' % id)
-                obj = objects[id]
-                args.append(obj)
-            elif '_CLOUDPICKLE' in a:
+            if '_CLOUDPICKLE' in a:
                 obj = cloudpickle.loads(base64.b64decode(a['_CLOUDPICKLE']))
                 args.append(obj)
+            else:
+                args.append(retrieve_object(a))
+        # pyspark objects can sometimes be in lists so we need to
+        # check the list and lookup any objects
+        elif type(a) == list:
+            processed_list = []
+
+            for x in a:
+                processed_list.append(retrieve_object(x))
+
+            args.append(processed_list)
         # spark strictly typechecks some arguments expecting strings but
         # decoding json will turn strings into unicode objects
         elif type(a) == unicode:
@@ -51,18 +57,18 @@ def arg_objects(request_args, request_kwargs={}):
     for k in request_kwargs:
         v = request_kwargs[k]
 
-        if type(v) == dict:
-            if '_PROXY_ID' in v:
-                id = v['_PROXY_ID']
-                logger.debug('Retrieving object id: %s' % id)
-
-                kwargs[k] = objects[id]
-            else:
-                kwargs[k] = v
-        else:
-            kwargs[k] = v
+        kwargs[k] = retrieve_object(v)
 
     return args, kwargs
+
+def retrieve_object(obj):
+    if type(obj) == dict and '_PROXY_ID' in obj:
+        id = obj['_PROXY_ID']
+        logger.debug('Retrieving object id: %s' % id)
+
+        return objects[id]
+    else:
+        return obj
 
 # checks if any objects are created via a function call
 # and returns the corresponding object
@@ -78,7 +84,6 @@ def object_response(obj, exception, paths=[], stdout=[]):
             'exception': exception
             }
 
-    # if obj is not None and type(obj) != types.FunctionType:
     if obj is not None:
         result['object'] = True
         result['class'] = obj.__class__.__name__
