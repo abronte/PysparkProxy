@@ -53,5 +53,12 @@ class FunctionTestCase(BaseTestCase):
         self.assertEqual(res[1]['concated'], '4b')
         self.assertEqual(res[2]['concated'], '6c')
 
+    def test_function_concat(self):
+        res = self.df.select(F.sha2(self.df.baz, 256).alias('sha2')).collect()
+
+        self.assertEqual(res[0]['sha2'], 'ca978112ca1bbdcafac231b39a23dc4da786eff8147c4e72b9807785afee48bb')
+        self.assertEqual(res[1]['sha2'], '3e23e8160039594a33894f6564e1b1348bbd7a0088d42c4acb73eeaed59c009d')
+        self.assertEqual(res[2]['sha2'], '2e7d2c03a9507ae265ecf5b5356885a53393a2029d241394997265a1a25aefc6')
+
 if __name__ == '__main__':
     unittest.main()

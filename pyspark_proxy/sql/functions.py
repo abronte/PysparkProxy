@@ -54,7 +54,7 @@ _functions = [
     'months_between', 'to_date', 'to_timestamp', 'trunc',
     'date_trunc', 'next_day', 'last_day', 'from_unixtime',
     'unix_timestamp', 'from_utc_timestamp', 'to_utc_timestamp',
-    'window', 'crc32', 'md5', 'sha1', 'shsa2', 'hash',
+    'window', 'crc32', 'md5', 'sha1', 'sha2', 'hash',
     'concat', 'concat_ws', 'decode', 'encode', 'format_number',
     'format_string', 'instr', 'substring', 'substring_index',
     'levenshtein', 'locate', 'lpad', 'rpad', 'repeat',
