@@ -75,10 +75,10 @@ class ColumnTestCase(BaseTestCase):
         self.assertEqual(res[0]['foo'], 1)
 
     def test_column_gt(self):
-        res = self.df.filter(self.df.foo > 1).collect()
+        res = self.df.filter(self.df.foo > 1).sort('foo').collect()
 
         self.assertEqual(res[0]['foo'], 3)
-        self.assertEqual(res[0]['foo'], 5)
+        self.assertEqual(res[1]['foo'], 5)
 
     def test_column_ne_and(self):
         res = self.df.filter((self.df.foo != 1) & (self.df.foo != 5)).collect()
