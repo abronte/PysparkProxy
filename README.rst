@@ -35,22 +35,14 @@ Install pyspark proxy via pip:
 
    pip install pysparkproxy
 
-Set up the API server with ``spark-submit``. The API server is what
-calls the functions in pyspark.
-
-For `example`_:
+Start the server:
 
 ::
 
-   import pyspark_proxy.server as server
+   pyspark-proxy-server start
 
-   server.run()
 
-Then start the server ``spark-submit pyspark_proxy_server.py``.
-
-The server listens on ``localhost:5000`` by default. You can customize
-this by passing in ``host`` and ``port`` keyword args in
-``server.run()``.
+The server listens on ``localhost:8765`` by default. Check the ``pyspark-proxy-server`` help for additional options.
 
 Locally
 ~~~~~~~
