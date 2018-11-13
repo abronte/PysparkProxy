@@ -48,5 +48,48 @@ class ColumnTestCase(BaseTestCase):
 
         self.assertIn('string', '\n'.join(output))
 
+    def test_column_add(self):
+        res = self.df.withColumn('add', self.df.foo + 1).collect()
+
+        self.assertEqual(res[0]['add'], 2)
+        self.assertEqual(res[1]['add'], 4)
+        self.assertEqual(res[2]['add'], 6)
+
+    def test_column_radd(self):
+        res = self.df.withColumn('add', self.df.foo + self.df.bar).collect()
+
+        self.assertEqual(res[0]['add'], 3)
+        self.assertEqual(res[1]['add'], 7)
+        self.assertEqual(res[2]['add'], 11)
+
+    def test_column_rsubtract(self):
+        res = self.df.withColumn('sub', self.df.foo - self.df.bar).sort('sub').collect()
+
+        self.assertEqual(res[0]['sub'], -1)
+        self.assertEqual(res[1]['sub'], -1)
+        self.assertEqual(res[2]['sub'], -1)
+
+    def test_column_eq(self):
+        res = self.df.filter(self.df.foo == 1).collect()
+
+        self.assertEqual(res[0]['foo'], 1)
+
+    def test_column_gt(self):
+        res = self.df.filter(self.df.foo > 1).collect()
+
+        self.assertEqual(res[0]['foo'], 3)
+        self.assertEqual(res[0]['foo'], 5)
+
+    def test_column_ne_and(self):
+        res = self.df.filter((self.df.foo != 1) & (self.df.foo != 5)).collect()
+
+        self.assertEqual(res[0]['foo'], 3)
+
+    def test_column_or(self):
+        res = self.df.filter((self.df.foo == 1) | (self.df.foo == 5)).collect()
+
+        self.assertEqual(res[0]['foo'], 1)
+        self.assertEqual(res[1]['foo'], 5)
+
 if __name__ == '__main__':
     unittest.main()
