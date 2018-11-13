@@ -9,6 +9,7 @@ from test_dataframe_writer import DataFrameWriterTestCase
 from test_exceptions import ExceptionTestCase
 from test_udf import UdfTestCase
 from test_functions import FunctionTestCase
+from test_group import GroupTestCase
 
 if __name__ == '__main__':
     loader = unittest.TestLoader()
@@ -21,7 +22,8 @@ if __name__ == '__main__':
         loader.loadTestsFromTestCase(DataFrameWriterTestCase),
         loader.loadTestsFromTestCase(ExceptionTestCase),
         loader.loadTestsFromTestCase(UdfTestCase),
-        loader.loadTestsFromTestCase(FunctionTestCase)
+        loader.loadTestsFromTestCase(FunctionTestCase),
+        loader.loadTestsFromTestCase(GroupTestCase)
     ]
     suite = unittest.TestSuite(tests)
 

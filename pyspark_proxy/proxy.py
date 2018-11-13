@@ -142,6 +142,10 @@ class Proxy(object):
                     from pyspark_proxy.sql.column import Column
 
                     return Column(resp['id'])
+                elif resp['class'] == 'GroupedData':
+                    from pyspark_proxy.sql.group import GroupedData
+
+                    return GroupedData(resp['id'])
                 else:
                     return resp
             elif 'pickle' == resp['class']:
