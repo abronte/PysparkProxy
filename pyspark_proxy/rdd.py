@@ -3,14 +3,6 @@ from pyspark_proxy.proxy import Proxy
 __all__ = ["RDD"]
 
 class RDD(Proxy):
-    _pickled_funcs = [
-            'map', 'flatMap', 'mapParitions', 'mapPartitionsWithIndex',
-            'mapPartitionsWithSplit', 'filter', 'repartitionAndSortWithinPartitions',
-            'sortByKey', 'sortBy', 'groupBy', 'foreach', 'foreachPartition',
-            'reduce', 'treeReduce', 'fold', 'aggregate', 'treeAggregate',
-            'reduceByKey', 'reduceByKeyLocally', 'combineByKey', 'aggregateByKey',
-            'foldByKey', 'groupByKey', 'flatMapValues', 'mapValues', 'keyBy'
-            ]
     def __init__(self, id):
         self._id = id
 
