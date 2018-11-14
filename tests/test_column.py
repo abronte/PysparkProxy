@@ -7,6 +7,7 @@ from base_test_case import BaseTestCase
 
 from pyspark_proxy.sql.column import Column
 from pyspark_proxy.server.capture import Capture
+from pyspark_proxy.sql.functions import col
 
 class ColumnTestCase(BaseTestCase):
     def setUp(self):
@@ -90,6 +91,16 @@ class ColumnTestCase(BaseTestCase):
 
         self.assertEqual(res[0]['foo'], 1)
         self.assertEqual(res[1]['foo'], 5)
+
+    def test_column_repr(self):
+        c = col('foo')
+
+        self.assertEqual(str(c), 'Column<foo>')
+
+    def test_column_add_repr(self):
+        col_add = col('foo') + col('bar')
+
+        self.assertEqual(str(col_add), 'Column<(foo + bar)>')
 
 if __name__ == '__main__':
     unittest.main()

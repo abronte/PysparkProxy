@@ -105,5 +105,10 @@ class DataFrameTestCase(BaseTestCase):
 
         self.assertEqual(res[0]['val'], 'value 1')
 
+    def test_dataframe_repr(self):
+        df_str = str(self.df)
+
+        self.assertEqual(df_str, 'DataFrame[bar: bigint, foo: bigint]')
+
 if __name__ == '__main__':
     unittest.main()
