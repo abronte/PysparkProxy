@@ -4,10 +4,20 @@ import uuid
 import json
 import pickle
 import base64
+import types
+import functools
 
+import cloudpickle
 import requests
 
 PROXY_URL = os.environ.get('PYSPARK_PROXY_URL', 'http://127.0.0.1:8765')
+
+def _copy_func(f):
+    g = types.FunctionType(f.func_code, f.func_globals, name=f.func_name,
+                           argdefs=f.func_defaults,
+                           closure=f.func_closure)
+    g = functools.update_wrapper(g, f)
+    return g
 
 class Proxy(object):
     _PROXY = True
@@ -134,6 +144,7 @@ class Proxy(object):
 
         if resp['object']:
             if 'id' in resp:
+                # this could be improved
                 if resp['class'] == 'DataFrame':
                     from pyspark_proxy.sql.dataframe import DataFrame
 
@@ -146,6 +157,14 @@ class Proxy(object):
                     from pyspark_proxy.sql.group import GroupedData
 
                     return GroupedData(resp['id'])
+                elif resp['class'] == 'RDD':
+                    from pyspark_proxy.rdd import RDD
+
+                    return RDD(resp['id'])
+                elif resp['class'] == 'PipelinedRDD':
+                    from pyspark_proxy.rdd import RDD
+
+                    return RDD(resp['id'])
                 else:
                     return resp
             elif 'pickle' == resp['class']:
@@ -171,16 +190,21 @@ class Proxy(object):
         prepared_kwargs = {}
 
         for a in args:
+            arg_type = type(a)
+
             # pyspark objects can sometimes be in lists so we need to
             # check the list and send their id over so the server knows
             # what to retrieve
-            if type(a) == list:
+            if arg_type == list:
                 processed_list = []
 
                 for x in a:
                     processed_list.append(self._proxy_obj_replace(x))
 
                 prepared_args.append(processed_list)
+            elif arg_type == types.FunctionType:
+                pickled_f = base64.b64encode(cloudpickle.dumps(_copy_func(a)))
+                prepared_args.append({'_CLOUDPICKLE': pickled_f})
             else:
                 prepared_args.append(self._proxy_obj_replace(a))
 

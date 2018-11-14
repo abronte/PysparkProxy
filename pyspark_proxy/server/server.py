@@ -239,6 +239,7 @@ def get_item():
     global objects
 
     result_exception = None
+    res_obj = None
     req = request.json
 
     logger.info('/get_item')

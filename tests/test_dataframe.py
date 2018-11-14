@@ -7,6 +7,7 @@ import pandas
 from base_test_case import BaseTestCase
 
 import pyspark_proxy.sql.functions as F
+from pyspark_proxy.rdd import RDD
 from pyspark_proxy.server.capture import Capture
 
 class DataFrameTestCase(BaseTestCase):
@@ -109,6 +110,11 @@ class DataFrameTestCase(BaseTestCase):
         df_str = str(self.df)
 
         self.assertEqual(df_str, 'DataFrame[bar: bigint, foo: bigint]')
+
+    def test_dataframe_rdd(self):
+        rdd = self.df.rdd
+
+        self.assertEqual(type(rdd), RDD)
 
 if __name__ == '__main__':
     unittest.main()

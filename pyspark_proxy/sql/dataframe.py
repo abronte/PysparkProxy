@@ -38,6 +38,10 @@ class DataFrame(Proxy):
         return self._columns
 
     @property
+    def rdd(self):
+        return self._call(self._id, 'rdd', ((), {}))
+
+    @property
     def write(self):
         return DataFrameWriter(self._id, 'write')
 
