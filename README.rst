@@ -1,4 +1,4 @@
-Pypsark Proxy |Build Status|
+Pypsark Proxy |Build Status| |PyPi|
 ============================
 
 **Under active development. Do not use for production use.**
@@ -78,3 +78,6 @@ code works the same if you were to run it via ``spark-submit``.
 
 .. |Build Status| image:: https://travis-ci.org/abronte/PysparkProxy.svg?branch=master
    :target: https://travis-ci.org/abronte/PysparkProxy
+
+.. |PyPi| image:: https://img.shields.io/pypi/v/pysparkproxy.svg
+   :target: https://pypi.org/project/PysparkProxy/
