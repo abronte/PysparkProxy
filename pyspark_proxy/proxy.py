@@ -181,6 +181,9 @@ class Proxy(object):
 
         return method
 
+    def __repr__(self):
+        return self._call(self._id, '__repr__', ((), {}))
+
     # since we can't send actual objects over to the server, we 
     # need to replace any pyspark related objects passed in functions
     # with a placeholder so the actual pyspark object on the server

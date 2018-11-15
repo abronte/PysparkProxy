@@ -11,6 +11,7 @@ from test_udf import UdfTestCase
 from test_functions import FunctionTestCase
 from test_group import GroupTestCase
 from test_rdd import RDDTestCase
+from test_types import TypesTestCase
 
 if __name__ == '__main__':
     loader = unittest.TestLoader()
@@ -25,7 +26,8 @@ if __name__ == '__main__':
         loader.loadTestsFromTestCase(UdfTestCase),
         loader.loadTestsFromTestCase(FunctionTestCase),
         loader.loadTestsFromTestCase(GroupTestCase),
-        loader.loadTestsFromTestCase(RDDTestCase)
+        loader.loadTestsFromTestCase(RDDTestCase),
+        loader.loadTestsFromTestCase(TypesTestCase)
     ]
     suite = unittest.TestSuite(tests)
 
