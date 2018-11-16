@@ -117,8 +117,10 @@ def resumable_before():
         req_digest = hashlib.sha1(str(request.json)).hexdigest()
 
         if req_digest in request_responses:
-            logger.info('%s - already run, returning result' % req_digest)
+            logger.info('RESUMABLE: %s - already run, returning result' % req_digest)
             return request_responses[req_digest]
+        else:
+            logger.info('RESUMABLE: %s - not cached, running' % req_digest)
 
 @app.after_request
 def resumable_after(response):
@@ -139,9 +141,6 @@ def create():
     logger.info('/create')
     logger.info(req)
 
-    req_digest = hashlib.sha1(str(req)).hexdigest()
-    logger.info('%s - has not run' % req_digest)
-
     id = str(uuid.uuid4())
     module_paths = req['module'].split('.')
     base_module = __import__(module_paths[0])
@@ -159,9 +158,6 @@ def create():
     args, kwargs = arg_objects(req['args'], req['kwargs'])
     objects[id] = callable(*args, **kwargs)
 
-    resp = jsonify({'object': True, 'id': id})
-    # request_responses[req_digest] = resp
-    # return resp
     return jsonify({'object': True, 'id': id})
 
 @app.route('/call', methods=['POST'])
