@@ -10,7 +10,6 @@ request_responses = {}
 def before():
     global request_responses
 
-    # if RESUMABLE:
     req_digest = hashlib.sha1(str(request.json)).hexdigest()
 
     if req_digest in request_responses:
@@ -22,7 +21,6 @@ def before():
 def after(response):
     global request_responses
 
-    # if RESUMABLE:
     req_digest = hashlib.sha1(str(request.json)).hexdigest()
     request_responses[req_digest] = response
 
