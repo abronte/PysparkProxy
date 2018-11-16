@@ -5,6 +5,8 @@ import pickle
 import base64
 import logging
 import types
+import hashlib
+import uuid
 
 logger = logging.getLogger()
 
@@ -22,6 +24,7 @@ from pyspark_proxy.server.capture import Capture
 app = Flask(__name__)
 
 objects = {}
+request_responses = {}
 
 # looks at incomming arguments to see if there are any
 # pyspark objects that should be retrieved and passed in
@@ -104,15 +107,30 @@ def object_response(obj, exception, paths=[], stdout=[]):
 
     return result
 
+@app.before_request
+def resumable():
+    global request_responses
+
+    req_digest = hashlib.sha1(str(request.json)).hexdigest()
+
+    if req_digest in request_responses:
+        logger.info('%s - already run, returning result' % req_digest)
+        return request_responses[req_digest]
+
 @app.route('/create', methods=['POST'])
 def create():
-    global objects
+    global objects, request_responses
     
     req = request.json
+    req_digest = hashlib.sha1(str(req)).hexdigest()
 
-    logger.info('/create')
+    logger.info('/create - digest: %s' % req_digest)
     logger.info(req)
 
+    req_digest = hashlib.sha1(str(req)).hexdigest()
+    logger.info('%s - has not run' % req_digest)
+
+    id = str(uuid.uuid4())
     module_paths = req['module'].split('.')
     base_module = __import__(module_paths[0])
 
@@ -127,9 +145,12 @@ def create():
 
     callable = getattr(module, req['class'])
     args, kwargs = arg_objects(req['args'], req['kwargs'])
-    objects[req['id']] = callable(*args, **kwargs)
+    objects[id] = callable(*args, **kwargs)
 
-    return req['id']
+    resp = jsonify({'object': True, 'id': id})
+    request_responses[req_digest] = resp
+
+    return resp
 
 @app.route('/call', methods=['POST'])
 def call():
