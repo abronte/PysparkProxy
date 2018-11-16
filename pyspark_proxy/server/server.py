@@ -106,7 +106,7 @@ def object_response(obj, exception, paths=[], stdout=[]):
 
 @app.route('/create', methods=['POST'])
 def create():
-    global objects, request_responses
+    global objects
     
     req = request.json
 
