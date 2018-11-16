@@ -5,8 +5,6 @@ import pickle
 import base64
 import logging
 import types
-import hashlib
-import uuid
 
 logger = logging.getLogger()
 
@@ -21,12 +19,9 @@ from flask.logging import default_handler
 
 from pyspark_proxy.server.capture import Capture
 
-RESUMABLE=False
-
 app = Flask(__name__)
 
 objects = {}
-request_responses = {}
 
 # looks at incomming arguments to see if there are any
 # pyspark objects that should be retrieved and passed in
@@ -108,29 +103,6 @@ def object_response(obj, exception, paths=[], stdout=[]):
             result['value'] = obj
 
     return result
-
-@app.before_request
-def resumable_before():
-    global request_responses
-
-    if RESUMABLE:
-        req_digest = hashlib.sha1(str(request.json)).hexdigest()
-
-        if req_digest in request_responses:
-            logger.info('RESUMABLE: %s - already run, returning result' % req_digest)
-            return request_responses[req_digest]
-        else:
-            logger.info('RESUMABLE: %s - not cached, running' % req_digest)
-
-@app.after_request
-def resumable_after(response):
-    global request_responses
-
-    if RESUMABLE:
-        req_digest = hashlib.sha1(str(request.json)).hexdigest()
-        request_responses[req_digest] = response
-
-    return response
 
 @app.route('/create', methods=['POST'])
 def create():
@@ -296,8 +268,6 @@ def clear():
     return 'ok'
 
 def run(*args, **kwargs):
-    global RESUMABLE
-
     if 'debug' not in kwargs or ('debug' in kwargs and kwargs['debug'] == False):
         app.logger.removeHandler(default_handler)
         app.logger = logger
@@ -308,7 +278,11 @@ def run(*args, **kwargs):
         kwargs['port'] = 8765
 
     if 'resumable' in kwargs and kwargs['resumable'] == True:
-        RESUMABLE=True
+        import pyspark_proxy.server.resumable as resumable
+
+        app.before_request(resumable.before)
+        app.after_request(resumable.after)
+
         del kwargs['resumable']
 
     app.run(*args, **kwargs)
