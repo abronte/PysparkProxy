@@ -12,6 +12,7 @@ from test_functions import FunctionTestCase
 from test_group import GroupTestCase
 from test_rdd import RDDTestCase
 from test_types import TypesTestCase
+from test_resumable_session import ResumableSessionTestCase
 
 if __name__ == '__main__':
     loader = unittest.TestLoader()
@@ -27,7 +28,8 @@ if __name__ == '__main__':
         loader.loadTestsFromTestCase(FunctionTestCase),
         loader.loadTestsFromTestCase(GroupTestCase),
         loader.loadTestsFromTestCase(RDDTestCase),
-        loader.loadTestsFromTestCase(TypesTestCase)
+        loader.loadTestsFromTestCase(TypesTestCase),
+        loader.loadTestsFromTestCase(ResumableSessionTestCase)
     ]
     suite = unittest.TestSuite(tests)
 

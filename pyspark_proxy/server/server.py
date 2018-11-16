@@ -21,6 +21,8 @@ from flask.logging import default_handler
 
 from pyspark_proxy.server.capture import Capture
 
+RESUMABLE=False
+
 app = Flask(__name__)
 
 objects = {}
@@ -108,23 +110,33 @@ def object_response(obj, exception, paths=[], stdout=[]):
     return result
 
 @app.before_request
-def resumable():
+def resumable_before():
     global request_responses
 
-    req_digest = hashlib.sha1(str(request.json)).hexdigest()
+    if RESUMABLE:
+        req_digest = hashlib.sha1(str(request.json)).hexdigest()
 
-    if req_digest in request_responses:
-        logger.info('%s - already run, returning result' % req_digest)
-        return request_responses[req_digest]
+        if req_digest in request_responses:
+            logger.info('%s - already run, returning result' % req_digest)
+            return request_responses[req_digest]
+
+@app.after_request
+def resumable_after(response):
+    global request_responses
+
+    if RESUMABLE:
+        req_digest = hashlib.sha1(str(request.json)).hexdigest()
+        request_responses[req_digest] = response
+
+    return response
 
 @app.route('/create', methods=['POST'])
 def create():
     global objects, request_responses
     
     req = request.json
-    req_digest = hashlib.sha1(str(req)).hexdigest()
 
-    logger.info('/create - digest: %s' % req_digest)
+    logger.info('/create')
     logger.info(req)
 
     req_digest = hashlib.sha1(str(req)).hexdigest()
@@ -148,9 +160,9 @@ def create():
     objects[id] = callable(*args, **kwargs)
 
     resp = jsonify({'object': True, 'id': id})
-    request_responses[req_digest] = resp
-
-    return resp
+    # request_responses[req_digest] = resp
+    # return resp
+    return jsonify({'object': True, 'id': id})
 
 @app.route('/call', methods=['POST'])
 def call():
@@ -288,6 +300,8 @@ def clear():
     return 'ok'
 
 def run(*args, **kwargs):
+    global RESUMABLE
+
     if 'debug' not in kwargs or ('debug' in kwargs and kwargs['debug'] == False):
         app.logger.removeHandler(default_handler)
         app.logger = logger
@@ -296,6 +310,10 @@ def run(*args, **kwargs):
 
     if 'port' not in kwargs:
         kwargs['port'] = 8765
+
+    if 'resumable' in kwargs and kwargs['resumable'] == True:
+        RESUMABLE=True
+        del kwargs['resumable']
 
     app.run(*args, **kwargs)
 
