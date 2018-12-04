@@ -23,12 +23,10 @@ pyspark api but when objects get created or called a request is made to
 the API server. The calls the API server receives then calls the actual
 pyspark APIs.
 
-What has been implemented
--------------------------
+Documenation
+------------
 
-Currently only some basic functionalities with the ``SparkContext``,
-``sqlContext`` and ``DataFrame`` classes have been implemented. See the
-`tests`_ for more on what is currently working.
+`Wiki`_
 
 Getting Started
 ---------------
@@ -93,3 +91,5 @@ code works the same if you were to run it via ``spark-submit`` on the server.
    :target: https://pypi.org/project/PysparkProxy/
    
 .. _Resumable Sessions: https://github.com/abronte/PysparkProxy/wiki/Resumable-Sessions
+
+.. _wiki: https://github.com/abronte/PysparkProxy/wiki
