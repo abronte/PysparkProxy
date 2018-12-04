@@ -113,6 +113,7 @@ def create():
     logger.info('/create')
     logger.info(req)
 
+    id = str(uuid.uuid4())
     module_paths = req['module'].split('.')
     base_module = __import__(module_paths[0])
 
@@ -127,9 +128,9 @@ def create():
 
     callable = getattr(module, req['class'])
     args, kwargs = arg_objects(req['args'], req['kwargs'])
-    objects[req['id']] = callable(*args, **kwargs)
+    objects[id] = callable(*args, **kwargs)
 
-    return req['id']
+    return jsonify({'object': True, 'id': id})
 
 @app.route('/call', methods=['POST'])
 def call():
@@ -275,6 +276,14 @@ def run(*args, **kwargs):
 
     if 'port' not in kwargs:
         kwargs['port'] = 8765
+
+    if 'resumable' in kwargs and kwargs['resumable'] == True:
+        import pyspark_proxy.server.resumable as resumable
+
+        app.before_request(resumable.before)
+        app.after_request(resumable.after)
+
+        del kwargs['resumable']
 
     app.run(*args, **kwargs)
 

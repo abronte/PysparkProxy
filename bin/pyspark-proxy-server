@@ -15,7 +15,7 @@ def start(args):
         configure_logging(args.foreground, args.log_level)
 
         if args.foreground:
-            start_server(args.host, args.port)
+            start_server(args)
         else:
             start_background(args)
 
@@ -31,14 +31,14 @@ def start_background(args):
         ## some debug output
         sys.exit(1)
     if pid == 0:
-        start_server(args.host, args.port)
+        start_server(args)
 
-def start_server(host, port):
+def start_server(args):
     import findspark
     findspark.init()
 
     import pyspark_proxy.server as server
-    server.run(host=host, port=port)
+    server.run(host=args.host, port=args.port, resumable=args.resumable)
 
 def load_pid():
     try:
@@ -87,6 +87,7 @@ if __name__ == '__main__':
     parser.add_argument('--host', help='Host to bind to. Default: 0.0.0.0', type=str, default='0.0.0.0')
     parser.add_argument('--foreground', help='Starts server in the foreground', action='store_true')
     parser.add_argument('--log-level', help='Sets logging level. Default: INFO', type=str, default='INFO')
+    parser.add_argument('--resumbable', help='Starts the server with resumable sessions enabled.', action='store_true')
 
     args = parser.parse_args()
 

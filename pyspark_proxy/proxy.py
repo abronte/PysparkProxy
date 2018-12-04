@@ -29,7 +29,6 @@ class Proxy(object):
     _func_chain = []
 
     def __init__(self, *args, **kwargs):
-        self._id = str(uuid.uuid4())
         self._kwargs = kwargs
         self._class = self.__class__.__name__
         self._args = args
@@ -52,11 +51,13 @@ class Proxy(object):
                 'module': self._module,
                 'class': self._class,
                 'kwargs': kwargs,
-                'args': args,
-                'id': self._id
+                'args': args
                 }
 
         r = requests.post(PROXY_URL+'/create', json=body)
+        res_json = r.json()
+
+        self._id = res_json['id']
 
     # for a single function call
     # ex: df.write.csv('foo.csv')
