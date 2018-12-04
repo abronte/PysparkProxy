@@ -5,6 +5,16 @@ Pypsark Proxy |Build Status| |PyPi|
 
 Seamlessly execute pyspark code on remote clusters.
 
+Features
+--------
+
+- 100% compatibility with Pyspark API (Just change the imports)
+- Structure code however you see fit
+- No need to copy files to the cluster
+- `Resumable Sessions`_
+- Simple installation
+- Seamless integration with other tools such as Jupyter and Matplotlib
+
 How it works
 ------------
 
@@ -71,7 +81,7 @@ Now you can start a spark context and do some dataframe operations.
    print(df.count())
 
 Then use the normal python binary to run this ``python my_app.py``. This
-code works the same if you were to run it via ``spark-submit``.
+code works the same if you were to run it via ``spark-submit`` on the server.
 
 .. _tests: https://github.com/abronte/PysparkProxy/tree/master/tests
 .. _example: https://github.com/abronte/PysparkProxy/blob/master/examples/pyspark_proxy_server.py
@@ -81,3 +91,5 @@ code works the same if you were to run it via ``spark-submit``.
 
 .. |PyPi| image:: https://img.shields.io/pypi/v/pysparkproxy.svg
    :target: https://pypi.org/project/PysparkProxy/
+   
+.. _Resumable Sessions: https://github.com/abronte/PysparkProxy/wiki/Resumable-Sessions
