@@ -34,8 +34,11 @@ class Proxy(object):
         self._args = args
         self._module = sys.modules[self.__class__.__module__].__name__.replace('pyspark_proxy', 'pyspark')
 
-        if 'no_init' not in kwargs:
+        if 'no_init' not in kwargs and '_id' not in kwargs:
             self._create_object()
+
+        if '_id' in kwargs:
+            self._id = kwargs['_id']
 
         # pickled objects returned from the server can have the pyspark path
         # module instead of pyspark_proxy module. this creates an alias for
@@ -166,6 +169,18 @@ class Proxy(object):
                     from pyspark_proxy.rdd import RDD
 
                     return RDD(resp['id'])
+                elif resp['class'] == 'Bucketizer':
+                    from pyspark_proxy.ml.feature import Bucketizer
+
+                    return Bucketizer(_id = resp['id'])
+                elif resp['class'] == 'CountVectorizerModel':
+                    from pyspark_proxy.ml.feature import CountVectorizerModel
+
+                    return CountVectorizerModel(resp['id'])
+                elif resp['class'] == 'StringIndexerModel':
+                    from pyspark_proxy.ml.feature import StringIndexerModel
+
+                    return StringIndexerModel(resp['id'])
                 else:
                     return resp
             elif 'pickle' == resp['class']:
