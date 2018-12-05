@@ -79,7 +79,7 @@ class DataFrameTestCase(BaseTestCase):
     def test_dtypes(self):
         dtypes = self.df.dtypes
 
-        self.assertEqual(dtypes, [[u'bar', u'bigint'], [u'foo', u'bigint']])
+        self.assertEqual(dtypes, [('bar', 'bigint'), ('foo', 'bigint')])
 
     def test_dataframe_with_column(self):
         res = self.df.withColumn('new_col', F.lit('new_col')).collect()
@@ -115,6 +115,16 @@ class DataFrameTestCase(BaseTestCase):
         rdd = self.df.rdd
 
         self.assertEqual(type(rdd), RDD)
+
+    def test_dataframe_head(self):
+        row = self.df.head()
+
+        self.assertEqual(str(type(row)), "<class 'pyspark.sql.types.Row'>")
+
+    def test_dataframe_first(self):
+        row = self.df.first()
+
+        self.assertEqual(str(type(row)), "<class 'pyspark.sql.types.Row'>")
 
 if __name__ == '__main__':
     unittest.main()

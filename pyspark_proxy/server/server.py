@@ -88,17 +88,18 @@ def object_response(obj, exception, paths=[], stdout=[]):
         result['object'] = True
         result['class'] = obj.__class__.__name__
 
-        if 'pyspark' in str(obj.__class__) or type(obj) == types.FunctionType:
+        # if the resulting object can be pickled just send the raw object
+        if 'types.Row' in str(type(obj)) or 'pandas.' in str(type(obj)) or list == type(obj):
+            logger.info('Pickling object type %s' % (str(type(obj))))
+            result['class'] = 'pickle'
+            result['value'] = base64.b64encode(pickle.dumps(obj, 2))
+        elif 'pyspark' in str(obj.__class__) or type(obj) == types.FunctionType:
             id = str(uuid.uuid4())
 
             result['id'] = id
 
             logger.info('Adding object id %s to the stack' % id)
             objects[id] = obj
-        # the last string in paths is the function that gets called
-        elif paths[-1] == 'toPandas' or paths[-1] == 'collect':
-            result['class'] = 'pickle'
-            result['value'] = base64.b64encode(pickle.dumps(obj, 2))
         else:
             result['value'] = obj
 
