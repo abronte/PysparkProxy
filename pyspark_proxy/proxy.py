@@ -214,11 +214,21 @@ class Proxy(object):
             # pyspark objects can sometimes be in lists so we need to
             # check the list and send their id over so the server knows
             # what to retrieve
-            if arg_type == list:
+            if arg_type == list or arg_type == tuple:
                 processed_list = []
 
                 for x in a:
-                    processed_list.append(self._proxy_obj_replace(x))
+                    type_x = type(x)
+
+                    if type_x == list or type_x == tuple:
+                        processed_sub_list = []
+
+                        for sub_x in x:
+                            processed_sub_list.append(self._proxy_obj_replace(sub_x))
+
+                        processed_list.append(processed_sub_list)
+                    else:
+                        processed_list.append(self._proxy_obj_replace(x))
 
                 prepared_args.append(processed_list)
             elif arg_type == types.FunctionType:

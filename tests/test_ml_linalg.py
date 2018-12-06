@@ -10,5 +10,11 @@ class MLLinalgTestCase(BaseTestCase):
 
         self.assertEqual(type(dv), DenseVector)
 
+    def test_ml_linalg_dense_vector_dataframe_nested(self):
+        df = self.sqlContext.createDataFrame([(DenseVector([1.0, 2.0]),),(DenseVector([0.0, 1.0]),),(DenseVector([3.0, 0.2]),)], ["tf"])
+        row = df.head()
+
+        self.assertIn('DenseVector', str(type(row.tf)))
+
 if __name__ == '__main__':
     unittest.main()
