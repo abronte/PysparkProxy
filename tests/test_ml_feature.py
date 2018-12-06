@@ -97,5 +97,55 @@ class MLFeatureTestCase(BaseTestCase):
 
         self.assertEqual(repr(res), 'DenseVector([0.0, 0.0])')
 
+    def test_ml_feature_bucketed_rendom_projection_lsh(self):
+        data = [(0, Vectors.dense([-1.0, -1.0 ]),),
+            (1, Vectors.dense([-1.0, 1.0 ]),),
+            (2, Vectors.dense([1.0, -1.0 ]),),
+            (3, Vectors.dense([1.0, 1.0]),)]
+
+        df = self.sqlContext.createDataFrame(data, ["id", "features"]) 
+
+        brp = BucketedRandomProjectionLSH(inputCol="features", outputCol="hashes",
+            seed=12345, bucketLength=1.0)
+
+
+        model = brp.fit(df)
+        row = model.transform(df).head()
+
+        self.assertEqual(repr(row), 'Row(id=0, features=DenseVector([-1.0, -1.0]), hashes=[DenseVector([-1.0])])')
+
+        data2 = [(4, Vectors.dense([2.0, 2.0 ]),),
+            (5, Vectors.dense([2.0, 3.0 ]),),
+            (6, Vectors.dense([3.0, 2.0 ]),),
+            (7, Vectors.dense([3.0, 3.0]),)]
+
+        df2 = self.sqlContext.createDataFrame(data2, ["id", "features"])
+
+        res = model.approxNearestNeighbors(df2, Vectors.dense([1.0, 2.0]), 1).collect()
+
+        self.assertEqual(len(res), 1)
+
+    def test_ml_feature_imputer(self):
+        df = self.sqlContext.createDataFrame([(1.0, float("nan")), (2.0, float("nan")), (float("nan"), 3.0),
+            (4.0, 4.0), (5.0, 5.0)], ["a", "b"])
+
+        imputer = Imputer(inputCols=["a", "b"], outputCols=["out_a", "out_b"])
+        model = imputer.fit(df)
+
+        self.assertEqual(model.surrogateDF.count(), 1)
+
+        res = imputer.setStrategy("median").setMissingValue(1.0).fit(df).transform(df)
+
+        self.assertEqual(res.count(), 5)
+
+    def test_ml_feature_word_2_vec(self):
+        sent = ("a b " * 100 + "a c " * 10).split(" ")
+        doc = self.sqlContext.createDataFrame([(sent,), (sent,)], ["sentence"])
+
+        word2Vec = Word2Vec(vectorSize=5, seed=42, inputCol="sentence", outputCol="model")
+        model = word2Vec.fit(doc)
+
+        self.assertEqual(model.getVectors().count(), 3)
+
 if __name__ == '__main__':
     unittest.main()
