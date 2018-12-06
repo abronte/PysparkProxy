@@ -88,5 +88,14 @@ class MLFeatureTestCase(BaseTestCase):
 
         self.assertEqual(res, [(0, 'a'), (1, 'b'), (2, 'c'), (3, 'a'), (4, 'a'), (5, 'c')])
 
+    def test_ml_feature_idf(self):
+        df = self.sqlContext.createDataFrame([(DenseVector([1.0, 2.0]),),(DenseVector([0.0, 1.0]),),(DenseVector([3.0, 0.2]),)], ["tf"])
+
+        idf = IDF(minDocFreq=3, inputCol="tf", outputCol="idf")
+        model = idf.fit(df)
+        res = model.transform(df).head().idf
+
+        self.assertEqual(repr(res), 'DenseVector([0.0, 0.0])')
+
 if __name__ == '__main__':
     unittest.main()

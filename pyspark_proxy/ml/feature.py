@@ -25,9 +25,6 @@ class CountVectorizerModel(Proxy):
 class HashingTF(Proxy):
     pass
 
-class IDF(Proxy):
-    pass
-
 class Tokenizer(Proxy):
     pass
 
@@ -50,3 +47,14 @@ class StringIndexerModel(Proxy):
 
 class IndexToString(Proxy):
     pass
+
+class IDF(Proxy):
+    pass
+
+class IDFModel(Proxy):
+    def __init__(self, id):
+        self._id = id
+
+    @property
+    def idf(self):
+        return self._call(self._id, 'idf', ((), {}))

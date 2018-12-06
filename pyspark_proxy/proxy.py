@@ -181,6 +181,10 @@ class Proxy(object):
                     from pyspark_proxy.ml.feature import StringIndexerModel
 
                     return StringIndexerModel(resp['id'])
+                elif resp['class'] == 'IDFModel':
+                    from pyspark_proxy.ml.feature import IDFModel
+
+                    return IDFModel(resp['id'])
                 else:
                     return resp
             elif 'pickle' == resp['class']:
