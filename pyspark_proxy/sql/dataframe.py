@@ -23,9 +23,6 @@ class DataFrame(Proxy):
     _column_obj = {}
     _columns = []
 
-    def __init__(self, id):
-        self._id = id
-
     @property
     def dtypes(self):
         return self._call(self._id, 'dtypes', ((), {}))
@@ -53,7 +50,7 @@ class DataFrame(Proxy):
         else:
             if item not in self._column_obj:
                 res = self._get_item(item)
-                col = Column(res['id'])
+                col = Column(_id=res['id'])
             else:
                 col = self._column_obj[item]
 

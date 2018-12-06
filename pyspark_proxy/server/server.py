@@ -109,6 +109,7 @@ def object_response(obj, exception, paths=[], stdout=[]):
             id = str(uuid.uuid4())
 
             result['id'] = id
+            result['module'] = obj.__module__
 
             logger.info('Adding object id %s to the stack' % id)
             objects[id] = obj

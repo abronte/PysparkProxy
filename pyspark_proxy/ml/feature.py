@@ -15,9 +15,6 @@ class CountVectorizer(Proxy):
     pass
 
 class CountVectorizerModel(Proxy):
-    def __init__(self, id):
-        self._id = id
-
     @property
     def vocabulary(self):
         return self._call(self._id, 'vocabulary', ((), {}))
@@ -38,9 +35,6 @@ class StringIndexer(Proxy):
     pass
 
 class StringIndexerModel(Proxy):
-    def __init__(self, id):
-        self._id = id
-
     @property
     def labels(self):
         return self._call(self._id, 'labels', ((), {}))
@@ -52,9 +46,6 @@ class IDF(Proxy):
     pass
 
 class IDFModel(Proxy):
-    def __init__(self, id):
-        self._id = id
-
     @property
     def idf(self):
         return self._call(self._id, 'idf', ((), {}))

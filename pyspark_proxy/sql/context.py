@@ -9,10 +9,7 @@ class SQLContext(Proxy):
     def getOrCreate(cls, *args, **kwargs):
         res = cls._call_class_method('getOrCreate', (args, kwargs))
 
-        ctxt = SQLContext(no_init=True)
-        ctxt._id = res['id']
-
-        return ctxt
+        return SQLContext(_id=res['id'])
 
     @property
     def read(self):

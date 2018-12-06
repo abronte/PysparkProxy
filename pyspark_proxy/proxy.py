@@ -34,11 +34,10 @@ class Proxy(object):
         self._args = args
         self._module = sys.modules[self.__class__.__module__].__name__.replace('pyspark_proxy', 'pyspark')
 
-        if 'no_init' not in kwargs and '_id' not in kwargs:
-            self._create_object()
-
         if '_id' in kwargs:
             self._id = kwargs['_id']
+        else:
+            self._create_object()
 
         # pickled objects returned from the server can have the pyspark path
         # module instead of pyspark_proxy module. this creates an alias for
@@ -148,51 +147,25 @@ class Proxy(object):
 
         if resp['object']:
             if 'id' in resp:
-                # this could be improved
-                if resp['class'] == 'DataFrame':
-                    from pyspark_proxy.sql.dataframe import DataFrame
-
-                    return DataFrame(resp['id'])
-                elif resp['class'] == 'Column':
-                    from pyspark_proxy.sql.column import Column
-
-                    return Column(resp['id'])
-                elif resp['class'] == 'GroupedData':
-                    from pyspark_proxy.sql.group import GroupedData
-
-                    return GroupedData(resp['id'])
-                elif resp['class'] == 'RDD':
-                    from pyspark_proxy.rdd import RDD
-
-                    return RDD(resp['id'])
-                elif resp['class'] == 'PipelinedRDD':
-                    from pyspark_proxy.rdd import RDD
-
-                    return RDD(resp['id'])
-                elif resp['class'] == 'Bucketizer':
-                    from pyspark_proxy.ml.feature import Bucketizer
-
-                    return Bucketizer(_id = resp['id'])
-                elif resp['class'] == 'CountVectorizerModel':
-                    from pyspark_proxy.ml.feature import CountVectorizerModel
-
-                    return CountVectorizerModel(resp['id'])
-                elif resp['class'] == 'StringIndexerModel':
-                    from pyspark_proxy.ml.feature import StringIndexerModel
-
-                    return StringIndexerModel(resp['id'])
-                elif resp['class'] == 'IDFModel':
-                    from pyspark_proxy.ml.feature import IDFModel
-
-                    return IDFModel(resp['id'])
-                else:
-                    return resp
+                return self._create_proxied_object(resp)
             elif 'pickle' == resp['class']:
                 return pickle.loads(base64.b64decode(resp['value']))
             else:
                 return resp['value']
         else:
             return None
+
+    def _create_proxied_object(self, resp):
+        mod_str = resp['module'].replace('pyspark.', 'pyspark_proxy.')
+
+        mod = __import__(mod_str, fromlist=[resp['class']])
+
+        if hasattr(mod, resp['class']):
+            klass = getattr(mod, resp['class'])
+
+            return klass(_id=resp['id'])
+        else:
+            return resp
 
     # catch all function
     def __getattr__(self, name):
