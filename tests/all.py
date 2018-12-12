@@ -13,6 +13,8 @@ from test_group import GroupTestCase
 from test_rdd import RDDTestCase
 from test_types import TypesTestCase
 from test_resumable_session import ResumableSessionTestCase
+from test_ml_feature import MLFeatureTestCase
+from test_ml_linalg import MLLinalgTestCase
 
 if __name__ == '__main__':
     loader = unittest.TestLoader()
@@ -29,7 +31,9 @@ if __name__ == '__main__':
         loader.loadTestsFromTestCase(GroupTestCase),
         loader.loadTestsFromTestCase(RDDTestCase),
         loader.loadTestsFromTestCase(TypesTestCase),
-        loader.loadTestsFromTestCase(ResumableSessionTestCase)
+        loader.loadTestsFromTestCase(ResumableSessionTestCase),
+        loader.loadTestsFromTestCase(MLFeatureTestCase),
+        loader.loadTestsFromTestCase(MLLinalgTestCase)
     ]
     suite = unittest.TestSuite(tests)
 

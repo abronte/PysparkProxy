@@ -3,9 +3,6 @@ from pyspark_proxy.proxy import Proxy
 __all__ = ['Column']
 
 class Column(Proxy):
-    def __init__(self, id):
-        self._id = id
-
     def alias(self, *args, **kwargs):
         return self._call(self._id, 'alias', (args, kwargs))
 

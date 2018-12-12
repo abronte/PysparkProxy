@@ -32,7 +32,9 @@ def arg_objects(request_args, request_kwargs={}):
     kwargs = {}
 
     for a in request_args:
-        if type(a) == dict:
+        arg_type = type(a)
+
+        if arg_type == dict:
             if '_CLOUDPICKLE' in a:
                 obj = cloudpickle.loads(base64.b64decode(a['_CLOUDPICKLE']))
                 args.append(obj)
@@ -40,16 +42,26 @@ def arg_objects(request_args, request_kwargs={}):
                 args.append(retrieve_object(a))
         # pyspark objects can sometimes be in lists so we need to
         # check the list and lookup any objects
-        elif type(a) == list:
+        elif arg_type == list or arg_type == tuple:
             processed_list = []
 
             for x in a:
-                processed_list.append(retrieve_object(x))
+                type_x = type(x)
+
+                if type_x == list or type_x == tuple:
+                    processed_sub_list = []
+
+                    for sub_x in x:
+                        processed_sub_list.append(retrieve_object(sub_x))
+
+                    processed_list.append(processed_sub_list)
+                else:
+                    processed_list.append(retrieve_object(x))
 
             args.append(processed_list)
         # spark strictly typechecks some arguments expecting strings but
         # decoding json will turn strings into unicode objects
-        elif type(a) == unicode:
+        elif arg_type == unicode:
             args.append(str(a))
         else:
             args.append(a)
@@ -97,6 +109,7 @@ def object_response(obj, exception, paths=[], stdout=[]):
             id = str(uuid.uuid4())
 
             result['id'] = id
+            result['module'] = obj.__module__
 
             logger.info('Adding object id %s to the stack' % id)
             objects[id] = obj

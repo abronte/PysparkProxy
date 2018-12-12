@@ -74,12 +74,7 @@ class StructType(DataType):
         return self._call(self._id, '__len__', ((), {}))
 
     def __getitem__(self, *args, **kwargs):
-        resp = self._call(self._id, '__getitem__', (args, kwargs))
-
-        s = StructField(no_init=True)
-        s._id = resp['id']
-
-        return s
+        return self._call(self._id, '__getitem__', (args, kwargs))
 
 class DateType(DataType):
     pass

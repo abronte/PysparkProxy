@@ -34,7 +34,9 @@ class Proxy(object):
         self._args = args
         self._module = sys.modules[self.__class__.__module__].__name__.replace('pyspark_proxy', 'pyspark')
 
-        if 'no_init' not in kwargs:
+        if '_id' in kwargs:
+            self._id = kwargs['_id']
+        else:
             self._create_object()
 
         # pickled objects returned from the server can have the pyspark path
@@ -145,35 +147,25 @@ class Proxy(object):
 
         if resp['object']:
             if 'id' in resp:
-                # this could be improved
-                if resp['class'] == 'DataFrame':
-                    from pyspark_proxy.sql.dataframe import DataFrame
-
-                    return DataFrame(resp['id'])
-                elif resp['class'] == 'Column':
-                    from pyspark_proxy.sql.column import Column
-
-                    return Column(resp['id'])
-                elif resp['class'] == 'GroupedData':
-                    from pyspark_proxy.sql.group import GroupedData
-
-                    return GroupedData(resp['id'])
-                elif resp['class'] == 'RDD':
-                    from pyspark_proxy.rdd import RDD
-
-                    return RDD(resp['id'])
-                elif resp['class'] == 'PipelinedRDD':
-                    from pyspark_proxy.rdd import RDD
-
-                    return RDD(resp['id'])
-                else:
-                    return resp
+                return self._create_proxied_object(resp)
             elif 'pickle' == resp['class']:
                 return pickle.loads(base64.b64decode(resp['value']))
             else:
                 return resp['value']
         else:
             return None
+
+    def _create_proxied_object(self, resp):
+        mod_str = resp['module'].replace('pyspark.', 'pyspark_proxy.')
+
+        mod = __import__(mod_str, fromlist=[resp['class']])
+
+        if hasattr(mod, resp['class']):
+            klass = getattr(mod, resp['class'])
+
+            return klass(_id=resp['id'])
+        else:
+            return resp
 
     # catch all function
     def __getattr__(self, name):
@@ -199,11 +191,21 @@ class Proxy(object):
             # pyspark objects can sometimes be in lists so we need to
             # check the list and send their id over so the server knows
             # what to retrieve
-            if arg_type == list:
+            if arg_type == list or arg_type == tuple:
                 processed_list = []
 
                 for x in a:
-                    processed_list.append(self._proxy_obj_replace(x))
+                    type_x = type(x)
+
+                    if type_x == list or type_x == tuple:
+                        processed_sub_list = []
+
+                        for sub_x in x:
+                            processed_sub_list.append(self._proxy_obj_replace(sub_x))
+
+                        processed_list.append(processed_sub_list)
+                    else:
+                        processed_list.append(self._proxy_obj_replace(x))
 
                 prepared_args.append(processed_list)
             elif arg_type == types.FunctionType:
